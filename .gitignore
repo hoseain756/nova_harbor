@@ -49,3 +49,9 @@ key.properties
 *.jks
 
 output/
+
+
+# Local artifacts and temporary files
+.codex/
+nova_avatars.zip
+supabase/.temp/
