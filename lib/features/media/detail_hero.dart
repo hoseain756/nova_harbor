@@ -168,6 +168,28 @@ class DetailColumnTitle extends StatelessWidget {
       Text(title, style: Theme.of(context).textTheme.headlineMedium);
 }
 
+class HarborPill extends StatelessWidget {
+  const HarborPill({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: .75),
+        borderRadius: BorderRadius.circular(HarborRadii.pill),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: .5),
+          width: 1,
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
 class DetailMetaRow extends StatelessWidget {
   const DetailMetaRow({super.key, required this.item, required this.isWide});
   final MediaItem item;
@@ -176,32 +198,74 @@ class DetailMetaRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Wrap(
-        spacing: 12,
-        runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          if (double.tryParse(item.rating ?? '') != null)
-            Row(mainAxisSize: MainAxisSize.min, children: [
-              Icon(LucideIcons.star, color: scheme.secondary, size: 16),
-              const SizedBox(width: 4),
-              Text(item.rating!,
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (item.releaseInfo?.isNotEmpty == true)
+          HarborPill(
+            child: Text(
+              item.releaseInfo!,
+              style: TextStyle(
+                color: scheme.onSurface,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        if (double.tryParse(item.rating ?? '') != null)
+          HarborPill(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(LucideIcons.star, color: scheme.secondary, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  item.rating!,
                   style: TextStyle(
-                      color: scheme.secondary, fontWeight: FontWeight.w700))
-            ]),
-          if (item.releaseInfo?.isNotEmpty == true) Text(item.releaseInfo!),
-          if (item.runtime?.isNotEmpty == true)
-            Text(item.runtime!, textDirection: TextDirection.ltr),
-          if (item.certification?.isNotEmpty == true)
-            Container(
-                padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 8, 4),
-                decoration: BoxDecoration(
-                    border: Border.all(color: scheme.outline),
-                    borderRadius: BorderRadius.circular(6)),
-                child: Text(item.certification!,
-                    style: Theme.of(context).textTheme.labelMedium)),
-          for (final genre in item.genres.take(3))
-            Text(genre, style: TextStyle(color: scheme.onSurfaceVariant)),
-        ]);
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (item.runtime?.isNotEmpty == true)
+          HarborPill(
+            child: Text(
+              item.runtime!,
+              textDirection: TextDirection.ltr,
+              style: TextStyle(
+                color: scheme.onSurfaceVariant,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        if (item.certification?.isNotEmpty == true)
+          HarborPill(
+            child: Text(
+              item.certification!,
+              style: TextStyle(
+                color: scheme.onSurfaceVariant,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        for (final genre in item.genres.take(3))
+          HarborPill(
+            child: Text(
+              genre,
+              style: TextStyle(
+                color: scheme.onSurfaceVariant,
+                fontSize: 12.5,
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 
@@ -344,8 +408,8 @@ class DetailActionRow extends StatelessWidget {
 class DetailCastCrew extends StatelessWidget {
   const DetailCastCrew(
       {super.key,
-      required this.item,
       required this.english,
+      required this.item,
       this.centered = false});
   final MediaItem item;
   final bool english, centered;
@@ -365,66 +429,103 @@ class DetailCastCrew extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(NovaStrings.lookup(english, 'message147'),
-          style: Theme.of(context).textTheme.titleLarge),
-      const SizedBox(height: 20),
+      Text(
+        NovaStrings.lookup(english, 'message147'),
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
+            ),
+      ),
+      const SizedBox(height: 14),
       SizedBox(
-          height: 180 + (scale - 1) * 72,
-          child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: people.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                final person = people[index];
-                final initials = person.name
-                    .trim()
-                    .split(RegExp(r'\s+'))
-                    .take(2)
-                    .map((part) => part.characters.first)
-                    .join();
-                return SizedBox(
-                    width: 112,
-                    child: Column(children: [
-                      ClipOval(
-                          child: SizedBox.square(
-                              dimension: 88,
-                              child: ColoredBox(
-                                  color: scheme.surfaceContainerHighest,
-                                  child: person.photo == null
-                                      ? Center(
-                                          child: Text(initials,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headlineSmall))
-                                      : NovaNetworkImage(person.photo!,
-                                          fit: BoxFit.cover,
-                                          cacheWidth:
-                                              imageCacheWidth(context, 88),
-                                          excludeFromSemantics: true,
-                                          errorBuilder: (_, __, ___) => Center(
-                                              child: Text(initials,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .headlineSmall)))))),
-                      const SizedBox(height: 12),
-                      Text(person.name,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall),
-                      if (person.role?.isNotEmpty == true) ...[
-                        const SizedBox(height: 4),
-                        Text(person.role!,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(color: scheme.onSurfaceVariant))
+        height: 195 + (scale - 1) * 48,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: people.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 12),
+          itemBuilder: (context, index) {
+            final person = people[index];
+            final initials = person.name
+                .trim()
+                .split(RegExp(r'\s+'))
+                .take(2)
+                .map((part) => part.characters.first)
+                .join();
+            return SizedBox(
+              width: 92,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 92,
+                    height: 136,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(HarborRadii.md),
+                      border: Border.all(
+                        color: scheme.outlineVariant.withValues(alpha: .5),
+                        width: 1,
+                      ),
+                      color: scheme.surfaceContainerHighest,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: .35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
-                    ]));
-              })),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: person.photo == null
+                        ? Center(
+                            child: Text(
+                              initials,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                          )
+                        : NovaNetworkImage(
+                            person.photo!,
+                            fit: BoxFit.cover,
+                            cacheWidth: imageCacheWidth(context, 92),
+                            excludeFromSemantics: true,
+                            errorBuilder: (_, __, ___) => Center(
+                              child: Text(
+                                initials,
+                                style:
+                                    Theme.of(context).textTheme.headlineSmall,
+                              ),
+                            ),
+                          ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    person.name,
+                    textAlign: TextAlign.start,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (person.role?.isNotEmpty == true) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      person.role!,
+                      textAlign: TextAlign.start,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      ),
     ]);
   }
 }

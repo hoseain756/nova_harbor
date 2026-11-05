@@ -82,15 +82,6 @@ class MediaRail extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: wide ? 34 : 20),
           child: Row(
             children: [
-              Container(
-                width: 3,
-                height: 19,
-                decoration: BoxDecoration(
-                  color: NovaTheme.of(context).gold,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              const SizedBox(width: 10),
               Expanded(
                 child: subtitle == null
                     ? Text(
@@ -192,19 +183,10 @@ class _SectionChevron extends StatelessWidget {
             width: 44,
             height: 44,
             child: Center(
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: NovaTheme.of(context).raised.withValues(alpha: .6),
-                  border: Border.all(color: NovaTheme.of(context).line),
-                ),
-                child: Icon(
-                  forward ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
-                  size: 22,
-                  color: NovaTheme.of(context).gold,
-                ),
+              child: Icon(
+                forward ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
+                size: 20,
+                color: NovaTheme.of(context).muted,
               ),
             ),
           ),

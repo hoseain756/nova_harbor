@@ -117,7 +117,28 @@ class _LibraryPageState extends State<LibraryPage> {
                     onChanged: (value) =>
                         setState(() => _query = value.trim().toLowerCase()),
                     decoration: InputDecoration(
-                        prefixIcon: const Icon(LucideIcons.search),
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: .6),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: .5),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: .5),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        prefixIcon: const Icon(LucideIcons.search, size: 20),
                         hintText: app.tr('message643'))))),
       if (_tab == 0) ...[
         if (watchlist.isEmpty)

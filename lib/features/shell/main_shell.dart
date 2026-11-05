@@ -482,7 +482,7 @@ class _TabletNavigation extends StatelessWidget {
           ? theme.colorScheme.onPrimaryContainer
           : theme.colorScheme.onSurfaceVariant;
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         child: Tooltip(
           message: label,
           child: Semantics(
@@ -493,14 +493,14 @@ class _TabletNavigation extends StatelessWidget {
               color: active
                   ? theme.colorScheme.primaryContainer
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(13),
               child: InkWell(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(13),
                 onTap: onTap,
                 child: SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: Icon(icon, size: 24, color: foreground),
+                  width: 52,
+                  height: 44,
+                  child: Icon(icon, size: 22, color: foreground),
                 ),
               ),
             ),
@@ -513,10 +513,11 @@ class _TabletNavigation extends StatelessWidget {
       width: 72,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerLow,
+          color: theme.scaffoldBackgroundColor,
           border: BorderDirectional(
             end: BorderSide(
-              color: theme.colorScheme.outlineVariant.withValues(alpha: .45),
+              color: theme.colorScheme.outlineVariant.withValues(alpha: .5),
+              width: 1,
             ),
           ),
         ),
@@ -536,9 +537,13 @@ class _TabletNavigation extends StatelessWidget {
                 noorDockIndexForTabId(tab.view) == selected,
                 () => onTabSelected(noorDockIndexForTabId(tab.view)),
               ),
-            const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Divider()),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Divider(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: .5),
+                height: 1,
+              ),
+            ),
             for (final item in secondary)
               destination(
                   item.$1, item.$2, false, () => onPageSelected(item.$3)),

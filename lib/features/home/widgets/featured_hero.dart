@@ -239,6 +239,15 @@ class _FeaturedCardState extends State<FeaturedHero>
   Widget build(BuildContext context) {
     final heroHeight = featuredHeroHeight(context);
     final activeItem = widget.items[_activeIndex];
+    final wide = MediaQuery.sizeOf(context).width >= 700;
+    final topPadding = MediaQuery.paddingOf(context).top + 8;
+    final cardPadding = EdgeInsets.fromLTRB(
+      wide ? 32 : 16,
+      topPadding,
+      wide ? 32 : 16,
+      12,
+    );
+
     return SizedBox(
       height: heroHeight,
       child: Listener(
@@ -252,53 +261,72 @@ class _FeaturedCardState extends State<FeaturedHero>
           onHorizontalDragUpdate: (details) =>
               _dragDistance += details.delta.dx,
           onHorizontalDragEnd: (_) => _handleSwipeEnd(),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              AnimatedSwitcher(
-                duration: _reducedMotion
-                    ? Duration.zero
-                    : const Duration(milliseconds: 380),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeOutCubic,
-                child: _FeaturedArtwork(
-                  key: ValueKey(activeItem.id),
-                  item: activeItem,
-                  artwork: _artwork[activeItem.id],
+          child: Padding(
+            padding: cardPadding,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(HarborRadii.xxl),
+                border: Border.all(
+                  color: NovaColors.harborEdgeSoft,
+                  width: 1,
                 ),
-              ),
-              const Positioned.fill(child: _FeaturedScrim()),
-              Positioned.fill(
-                child: ValueListenableBuilder<double>(
-                  valueListenable: widget.contentVisibility,
-                  child: _FeaturedOverlay(
-                    item: activeItem,
-                    artwork: _artwork[activeItem.id],
-                    itemsCount: widget.items.length,
-                    activeIndex: _activeIndex,
-                    reduceMotion: _reducedMotion,
-                    onSelectPage: _goToSlide,
-                    onTap: () => widget.onTap(activeItem),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .5),
+                    blurRadius: 28,
+                    offset: const Offset(0, 10),
                   ),
-                  builder: (context, visibility, child) => IgnorePointer(
-                    key: const ValueKey('home-hero-content-ignore-pointer'),
-                    ignoring: visibility <= .05,
-                    child: Opacity(
-                      key: const ValueKey('home-hero-content-opacity'),
-                      opacity: visibility,
-                      child: child,
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  AnimatedSwitcher(
+                    duration: _reducedMotion
+                        ? Duration.zero
+                        : const Duration(milliseconds: 380),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeOutCubic,
+                    child: _FeaturedArtwork(
+                      key: ValueKey(activeItem.id),
+                      item: activeItem,
+                      artwork: _artwork[activeItem.id],
                     ),
                   ),
-                ),
+                  const Positioned.fill(child: _FeaturedScrim()),
+                  Positioned.fill(
+                    child: ValueListenableBuilder<double>(
+                      valueListenable: widget.contentVisibility,
+                      child: _FeaturedOverlay(
+                        item: activeItem,
+                        artwork: _artwork[activeItem.id],
+                        itemsCount: widget.items.length,
+                        activeIndex: _activeIndex,
+                        reduceMotion: _reducedMotion,
+                        onSelectPage: _goToSlide,
+                        onTap: () => widget.onTap(activeItem),
+                      ),
+                      builder: (context, visibility, child) => IgnorePointer(
+                        key: const ValueKey('home-hero-content-ignore-pointer'),
+                        ignoring: visibility <= .05,
+                        child: Opacity(
+                          key: const ValueKey('home-hero-content-opacity'),
+                          opacity: visibility,
+                          child: child,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
 class _FeaturedArtwork extends StatelessWidget {
   const _FeaturedArtwork(
       {super.key, required this.item, required this.artwork});
@@ -374,14 +402,16 @@ class _FeaturedScrim extends StatelessWidget {
 }
 
 class _FeaturedOverlay extends StatelessWidget {
-  const _FeaturedOverlay(
-      {required this.item,
-      required this.artwork,
-      required this.itemsCount,
-      required this.activeIndex,
-      required this.reduceMotion,
-      required this.onSelectPage,
-      required this.onTap});
+  const _FeaturedOverlay({
+    required this.item,
+    required this.artwork,
+    required this.itemsCount,
+    required this.activeIndex,
+    required this.reduceMotion,
+    required this.onSelectPage,
+    required this.onTap,
+  });
+
   final MediaItem item;
   final FeaturedArtwork? artwork;
   final int itemsCount;
@@ -389,143 +419,254 @@ class _FeaturedOverlay extends StatelessWidget {
   final bool reduceMotion;
   final ValueChanged<int> onSelectPage;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
     final english = app.english;
-    final scheme = Theme.of(context).colorScheme;
     final size = MediaQuery.sizeOf(context);
     final wide = size.width >= 700;
-    // Cinematic art always has a dark palette-derived legibility bed.
-    final foreground = Theme.of(context).brightness == Brightness.dark
-        ? scheme.onSurface
-        : scheme.surface;
+    const foreground = Colors.white;
     final logo = artwork?.logo ?? item.logo;
     final displayTitle = artwork?.title ?? item.name;
     final genre = artwork?.genre ?? item.genres.firstOrNull;
     final type = item.type == 'movie'
-        ? (NovaStrings.lookup(english, 'message128'))
-        : (NovaStrings.lookup(english, 'message129'));
+        ? (english ? 'Movies' : 'الأفلام')
+        : (english ? 'Series' : 'المسلسلات');
+
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(
-          wide ? 40 : 24, 72, wide ? 40 : 24, 24),
+        wide ? 28 : 16,
+        16,
+        wide ? 28 : 16,
+        14,
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(NovaStrings.lookup(english, 'message130'),
-              style: TextStyle(
-                  color: foreground.withValues(alpha: .85),
-                  fontSize: 12,
-                  letterSpacing: english ? 2.5 : 0,
-                  fontWeight: FontWeight.w700)),
-          const SizedBox(height: 16),
-          if (logo != null)
-            NovaNetworkImage(logo,
-                width: math.min(size.width * .65, 320),
-                height: wide ? 88 : 72,
-                fit: BoxFit.contain,
-                alignment: AlignmentDirectional.centerStart
-                    .resolve(Directionality.of(context)),
-                cacheWidth: imageCacheWidth(context, 320),
-                semanticLabel: displayTitle,
-                errorBuilder: (_, __, ___) => Text(displayTitle,
-                    maxLines: 2,
+          // Harbor Floating Trending Pill Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: .50),
+              borderRadius: BorderRadius.circular(HarborRadii.sm),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: .15),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  LucideIcons.trendingUp,
+                  size: 13,
+                  color: NovaColors.harborAccent,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    english
+                        ? '#${activeIndex + 1} in $type Today'
+                        : '#${activeIndex + 1} في $type اليوم',
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: foreground,
-                        fontSize: wide ? 40 : 32,
-                        fontWeight: FontWeight.w800,
-                        height: 1.2)))
-          else
-            Text(displayTitle,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (logo != null)
+            NovaNetworkImage(
+              logo,
+              width: math.min(size.width * .65, 320),
+              height: wide ? 88 : 72,
+              fit: BoxFit.contain,
+              alignment: AlignmentDirectional.centerStart
+                  .resolve(Directionality.of(context)),
+              cacheWidth: imageCacheWidth(context, 320),
+              semanticLabel: displayTitle,
+              errorBuilder: (_, __, ___) => Text(
+                displayTitle,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    color: foreground,
-                    fontSize: wide ? 40 : 32,
-                    fontWeight: FontWeight.w800,
-                    height: 1.2)),
-          const SizedBox(height: 12),
-          Wrap(spacing: 12, runSpacing: 4, children: [
-            Text(type,
-                style:
-                    TextStyle(color: foreground, fontWeight: FontWeight.w700)),
-            if (item.releaseInfo?.isNotEmpty == true)
-              Text(item.releaseInfo!,
-                  style: TextStyle(color: foreground.withValues(alpha: .85))),
-            if (genre != null)
-              Text(genre,
-                  style: TextStyle(color: foreground.withValues(alpha: .85))),
-          ]),
+                  color: foreground,
+                  fontSize: wide ? 36 : 28,
+                  fontWeight: FontWeight.w800,
+                  height: 1.15,
+                ),
+              ),
+            )
+          else
+            Text(
+              displayTitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: foreground,
+                fontSize: wide ? 36 : 28,
+                fontWeight: FontWeight.w800,
+                height: 1.15,
+              ),
+            ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 12,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (item.releaseInfo?.isNotEmpty == true)
+                Text(
+                  item.releaseInfo!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              if (item.rating?.isNotEmpty == true)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5C518).withValues(alpha: .15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: const Color(0xFFF5C518).withValues(alpha: .5),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.star,
+                          size: 12, color: Color(0xFFF5C518)),
+                      const SizedBox(width: 4),
+                      Text(
+                        item.rating!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (genre != null)
+                Text(
+                  genre,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .75),
+                    fontSize: 13,
+                  ),
+                ),
+            ],
+          ),
           if (wide &&
               (artwork?.overview ?? item.description)?.isNotEmpty == true) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: Text(artwork?.overview ?? item.description!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: foreground.withValues(alpha: .85),
-                        height: 1.6))),
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Text(
+                artwork?.overview ?? item.description!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: foreground.withValues(alpha: .85),
+                  height: 1.5,
+                  fontSize: 14,
+                ),
+              ),
+            ),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                FilledButton.icon(
-                    onPressed: onTap,
-                    icon: const Icon(LucideIcons.play, size: 20),
-                    label: Text(NovaStrings.lookup(english, 'message131')),
-                    style: FilledButton.styleFrom(
-                        backgroundColor: NovaColors.white,
-                        foregroundColor: NovaColors.ink,
-                        shape: const StadiumBorder(),
-                        elevation: 4,
-                        shadowColor: Colors.black.withValues(alpha: .5),
-                        minimumSize: const Size(160, 52))),
-                IconButton.filledTonal(
-                    onPressed: () => unawaited(app.toggleWatchlist(item)),
-                    tooltip: app.contains(item)
-                        ? (NovaStrings.lookup(english, 'message132'))
-                        : (NovaStrings.lookup(english, 'message133')),
-                    icon: Icon(app.contains(item)
-                        ? LucideIcons.check
-                        : LucideIcons.plus,
-                        color: NovaColors.white),
-                    style: IconButton.styleFrom(
-                        backgroundColor: NovaColors.surfaceHigh.withValues(alpha: .85),
-                        side: BorderSide(color: scheme.outlineVariant),
-                        minimumSize: const Size.square(52))),
-              ]),
+            spacing: 12,
+            runSpacing: 10,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              // Main Harbor Play button
+              FilledButton.icon(
+                onPressed: onTap,
+                icon: const Icon(LucideIcons.play, size: 19),
+                label: Text(NovaStrings.lookup(english, 'message131')),
+                style: FilledButton.styleFrom(
+                  backgroundColor: NovaColors.white,
+                  foregroundColor: NovaColors.ink,
+                  shape: const StadiumBorder(),
+                  elevation: 4,
+                  shadowColor: Colors.black.withValues(alpha: .5),
+                  minimumSize: const Size(120, 48),
+                ),
+              ),
+              // Watchlist button
+              IconButton(
+                onPressed: () => unawaited(app.toggleWatchlist(item)),
+                tooltip: app.contains(item)
+                    ? (NovaStrings.lookup(english, 'message132'))
+                    : (NovaStrings.lookup(english, 'message133')),
+                icon: Icon(
+                  app.contains(item)
+                      ? LucideIcons.check
+                      : LucideIcons.plus,
+                  color: app.contains(item)
+                      ? NovaColors.harborAccent
+                      : Colors.white,
+                  size: 20,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black.withValues(alpha: .38),
+                  side: BorderSide(
+                    color: Colors.white.withValues(alpha: .24),
+                  ),
+                  minimumSize: const Size.square(48),
+                ),
+              ),
+              // More Info button
+              IconButton(
+                onPressed: onTap,
+                tooltip: NovaStrings.lookup(english, 'message101'),
+                icon: const Icon(LucideIcons.info, color: Colors.white, size: 20),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black.withValues(alpha: .38),
+                  side: BorderSide(
+                    color: Colors.white.withValues(alpha: .24),
+                  ),
+                  minimumSize: const Size.square(48),
+                ),
+              ),
+            ],
+          ),
           if (itemsCount > 1) ...[
-            const SizedBox(height: 12),
-            Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(
-                  onPressed: () => onSelectPage(activeIndex - 1),
-                  tooltip: NovaStrings.lookup(english, 'message134'),
-                  icon: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? LucideIcons.chevronRight
-                          : LucideIcons.chevronLeft,
-                      color: foreground)),
-              Text('${activeIndex + 1} / $itemsCount',
-                  textDirection: TextDirection.ltr,
-                  style: TextStyle(
-                      color: foreground,
-                      fontFeatures: const [FontFeature.tabularFigures()])),
-              IconButton(
-                  onPressed: () => onSelectPage(activeIndex + 1),
-                  tooltip: NovaStrings.lookup(english, 'message135'),
-                  icon: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? LucideIcons.chevronLeft
-                          : LucideIcons.chevronRight,
-                      color: foreground)),
-            ]),
+            const SizedBox(height: 14),
+            // Harbor horizontal indicator dots
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (int i = 0; i < itemsCount; i++)
+                  GestureDetector(
+                    onTap: () => onSelectPage(i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      height: 6,
+                      width: i == activeIndex ? 22 : 6,
+                      decoration: BoxDecoration(
+                        color: i == activeIndex
+                            ? NovaColors.harborAccent
+                            : Colors.white.withValues(alpha: .24),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ],
         ],
       ),

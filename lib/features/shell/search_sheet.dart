@@ -178,13 +178,34 @@ class _SearchSheetState extends State<SearchSheet>
                       },
                       textInputAction: TextInputAction.search,
                       decoration: InputDecoration(
-                          prefixIcon: const Icon(LucideIcons.search),
+                          filled: true,
+                          fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: .6),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(999),
+                            borderSide: BorderSide(
+                              color: theme.colorScheme.outlineVariant.withValues(alpha: .5),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(999),
+                            borderSide: BorderSide(
+                              color: theme.colorScheme.outlineVariant.withValues(alpha: .5),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(999),
+                            borderSide: BorderSide(
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          prefixIcon: const Icon(LucideIcons.search, size: 20),
                           hintText: app.tr('message693'),
                           suffixIcon: _controller.text.isEmpty
                               ? null
                               : IconButton(
                                   tooltip: app.tr('message473'),
-                                  icon: const Icon(LucideIcons.x),
+                                  icon: const Icon(LucideIcons.x, size: 18),
                                   onPressed: () {
                                     _controller.clear();
                                     _onChanged('');
