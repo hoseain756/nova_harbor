@@ -67,23 +67,25 @@ class Top10Item extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: SizedBox(
-                      width: 144,
-                      height: 216,
-                      child: ColoredBox(
-                          color: scheme.surfaceContainerHighest,
-                          child: item.poster?.isNotEmpty == true
-                              ? NovaNetworkImage(item.poster!,
-                                  fit: BoxFit.cover,
-                                  cacheWidth: imageCacheWidth(context, 144),
-                                  semanticLabel: item.name,
-                                  errorBuilder: (_, __, ___) => Icon(
-                                      LucideIcons.film,
-                                      color: scheme.onSurfaceVariant))
-                              : Icon(LucideIcons.film,
-                                  color: scheme.onSurfaceVariant)))),
+              Container(
+                  width: 144,
+                  height: 216,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: scheme.outlineVariant, width: 1),
+                    color: scheme.surfaceContainerHighest,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: item.poster?.isNotEmpty == true
+                      ? NovaNetworkImage(item.poster!,
+                          fit: BoxFit.cover,
+                          cacheWidth: imageCacheWidth(context, 144),
+                          semanticLabel: item.name,
+                          errorBuilder: (_, __, ___) => Icon(
+                              LucideIcons.film,
+                              color: scheme.onSurfaceVariant))
+                      : Icon(LucideIcons.film,
+                          color: scheme.onSurfaceVariant)),
               const SizedBox(height: 12),
               Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(rank.toString().padLeft(2, '0'),

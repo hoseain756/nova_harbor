@@ -723,7 +723,7 @@ class _GlassDockState extends State<GlassDock> with TickerProviderStateMixin {
                   // 1px white/15 ring painted above the clipped glass + the
                   // old back-pill soft shadow (Task 120 recipe swap).
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(_kStadiumRadius),
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                         color: Theme.of(context)
                             .colorScheme
@@ -731,14 +731,14 @@ class _GlassDockState extends State<GlassDock> with TickerProviderStateMixin {
                             .withValues(alpha: .65)),
                     boxShadow: [
                       BoxShadow(
-                        color: NovaColors.ink.withValues(alpha: .35),
-                        blurRadius: 14,
-                        offset: const Offset(0, 4),
+                        color: Colors.black.withValues(alpha: .5),
+                        blurRadius: 28,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(_kStadiumRadius),
+                    borderRadius: BorderRadius.circular(20),
                     child: Stack(
                       children: [
                         // Glass backdrop — Task 136 (perf): the LIVE
@@ -804,9 +804,7 @@ class _GlassDockState extends State<GlassDock> with TickerProviderStateMixin {
                                                     .colorScheme
                                                     .primaryContainer,
                                                 borderRadius:
-                                                    BorderRadius.circular(
-                                                  _kStadiumRadius,
-                                                ),
+                                                    BorderRadius.circular(13),
                                               ),
                                             ),
                                           ),
@@ -960,7 +958,9 @@ class _DockTabButton extends StatelessWidget {
                   Icon(tab.iconOutline,
                       size: iconSize,
                       color: highlighted
-                          ? Theme.of(context).colorScheme.onPrimaryContainer
+                          ? (Theme.of(context).brightness == Brightness.dark
+                              ? NovaColors.ink
+                              : NovaColors.white)
                           : Theme.of(context).colorScheme.onSurfaceVariant),
                   if (showLabel) ...[
                     const SizedBox(height: 3),
@@ -979,9 +979,9 @@ class _DockTabButton extends StatelessWidget {
                                             ? FontWeight.w800
                                             : FontWeight.w500,
                                     color: highlighted
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .onPrimaryContainer
+                                        ? (Theme.of(context).brightness == Brightness.dark
+                                            ? NovaColors.ink
+                                            : NovaColors.white)
                                         : Theme.of(context)
                                             .colorScheme
                                             .onSurfaceVariant))),

@@ -1,3 +1,4 @@
+import '../../../core/theme/nova_theme.dart';
 import 'package:nova_mobile/l10n/nova_strings.dart';
 import 'package:nova_mobile/shared/widgets/nova_network_image.dart';
 import 'dart:async';
@@ -480,6 +481,11 @@ class _FeaturedOverlay extends StatelessWidget {
                     icon: const Icon(LucideIcons.play, size: 20),
                     label: Text(NovaStrings.lookup(english, 'message131')),
                     style: FilledButton.styleFrom(
+                        backgroundColor: NovaColors.white,
+                        foregroundColor: NovaColors.ink,
+                        shape: const StadiumBorder(),
+                        elevation: 4,
+                        shadowColor: Colors.black.withValues(alpha: .5),
                         minimumSize: const Size(160, 52))),
                 IconButton.filledTonal(
                     onPressed: () => unawaited(app.toggleWatchlist(item)),
@@ -488,8 +494,11 @@ class _FeaturedOverlay extends StatelessWidget {
                         : (NovaStrings.lookup(english, 'message133')),
                     icon: Icon(app.contains(item)
                         ? LucideIcons.check
-                        : LucideIcons.plus),
+                        : LucideIcons.plus,
+                        color: NovaColors.white),
                     style: IconButton.styleFrom(
+                        backgroundColor: NovaColors.surfaceHigh.withValues(alpha: .85),
+                        side: BorderSide(color: scheme.outlineVariant),
                         minimumSize: const Size.square(52))),
               ]),
           if (itemsCount > 1) ...[

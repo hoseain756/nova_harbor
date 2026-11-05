@@ -1,3 +1,4 @@
+import '../../core/theme/nova_theme.dart';
 import 'package:nova_mobile/l10n/nova_strings.dart';
 import 'package:nova_mobile/shared/widgets/nova_network_image.dart';
 import 'package:flutter/foundation.dart';
@@ -14,20 +15,31 @@ class DetailBackPill extends StatelessWidget {
   const DetailBackPill({super.key, required this.english});
   final bool english;
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: EdgeInsetsDirectional.only(
-            start: 16, top: MediaQuery.paddingOf(context).top + 12),
-        child: Align(
-            alignment: AlignmentDirectional.topStart,
-            child: IconButton.filledTonal(
-              tooltip: NovaStrings.lookup(english, 'message136'),
-              style: IconButton.styleFrom(minimumSize: const Size.square(48)),
-              icon: Icon(Directionality.of(context) == TextDirection.rtl
-                  ? LucideIcons.arrowRight
-                  : LucideIcons.arrowLeft),
-              onPressed: () => Navigator.of(context).maybePop(),
-            )),
-      );
+  Widget build(BuildContext context) {
+    final forward = Directionality.of(context) == TextDirection.ltr;
+    return Padding(
+      padding: EdgeInsetsDirectional.only(
+          start: 16, top: MediaQuery.paddingOf(context).top + 12),
+      child: Align(
+        alignment: AlignmentDirectional.topStart,
+        child: IconButton.filledTonal(
+          tooltip: NovaStrings.lookup(english, 'message136'),
+          style: IconButton.styleFrom(
+            minimumSize: const Size.square(40),
+            backgroundColor: Colors.black.withValues(alpha: .40),
+            foregroundColor: Colors.white,
+            side: BorderSide(color: Colors.white.withValues(alpha: .15)),
+          ),
+          icon: Icon(
+            forward ? LucideIcons.chevronLeft : LucideIcons.chevronRight,
+            color: Colors.white,
+            size: 22,
+          ),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+      ),
+    );
+  }
 }
 
 /// Uncropped canvas edge: artwork always fills the available width, on phones
@@ -248,17 +260,22 @@ class DetailActionRow extends StatelessWidget {
             FilledButton.icon(
                 onPressed: loading ? null : onPrimaryPressed,
                 icon: loading
-                    ? const SizedBox.square(
+                    ? SizedBox.square(
                         dimension: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                        child: CircularProgressIndicator(strokeWidth: 2, color: NovaColors.ink))
                     : Icon(
                         primaryIsResume
                             ? LucideIcons.rotateCcw
                             : LucideIcons.play,
                         size: 20),
                 label: Text(primaryLabel),
-                style:
-                    FilledButton.styleFrom(minimumSize: const Size(176, 52))),
+                style: FilledButton.styleFrom(
+                    backgroundColor: NovaColors.white,
+                    foregroundColor: NovaColors.ink,
+                    shape: const StadiumBorder(),
+                    elevation: 3,
+                    shadowColor: Colors.black.withValues(alpha: .4),
+                    minimumSize: const Size(176, 52))),
             OutlinedButton.icon(
                 onPressed: onToggleWatchlist,
                 icon: Icon(inList ? LucideIcons.check : LucideIcons.plus,
@@ -266,8 +283,10 @@ class DetailActionRow extends StatelessWidget {
                 label: Text(inList
                     ? (NovaStrings.lookup(english, 'message137'))
                     : (NovaStrings.lookup(english, 'message138'))),
-                style:
-                    OutlinedButton.styleFrom(minimumSize: const Size(112, 52))),
+                style: OutlinedButton.styleFrom(
+                    shape: const StadiumBorder(),
+                    side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+                    minimumSize: const Size(112, 52))),
             if (!nativeTopActions)
               IconButton.outlined(
                   onPressed: onShare,

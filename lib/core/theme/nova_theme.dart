@@ -2,30 +2,54 @@ import 'package:flutter/material.dart';
 
 /// Only colours supplied in the NOVA identity, including its companion palette.
 abstract final class NovaColors {
-  static const red = Color(0xFFD13B47);
-  static const redDeep = Color(0xFF9E2A34);
-  static const redSoft = Color(0xFFE8858D);
-  static const blush = Color(0xFFF9E4E6);
-  static const ink = Color(0xFF141417);
+  // Harbor Cool-Grey Signature Palette with warm amber accent (oklch(0.78 0.13 60))
+  static const red = Color(0xFFF4A25C);
+  static const redDeep = Color(0xFFC87A38);
+  static const redSoft = Color(0xFFF8BE8E);
+  static const blush = Color(0xFF2C241E);
+  static const ink = Color(0xFF111213);
   static const oledBlack = Color(0xFF000000);
-  static const graphite = Color(0xFF232329);
-  static const surfaceHigh = Color(0xFF2E2E35);
-  static const divider = Color(0xFF3A3A42);
+  static const graphite = Color(0xFF191B1C);
+  static const surfaceHigh = Color(0xFF252628);
+  static const raised = Color(0xFF323335);
+  static const divider = Color(0xFF3C3D3F);
+  static const edgeSoft = Color(0x403C3D3F);
   static const white = Color(0xFFFFFFFF);
-  static const mist = Color(0xFFA4A4AC);
-  static const textDisabled = Color(0xFF6E6E78);
-  static const success = Color(0xFF3FB27F);
-  static const warning = Color(0xFFE8A93B);
+  static const mist = Color(0xFFA8ABAD);
+  static const textDisabled = Color(0xFF626365);
+  static const success = Color(0xFF45B164);
+  static const warning = Color(0xFFF5C451);
   static const info = Color(0xFF4C8DE0);
-  static const error = Color(0xFFE5484D);
+  static const error = Color(0xFFC53637);
   static const rating = Color(0xFFF5C451);
-  static const lightBackground = Color(0xFFF6F6F7);
-  static const lightSurface = white;
-  static const lightText = ink;
-  static const lightTextSecondary = Color(0xFF585862);
-  static const lightAccent = Color(0xFFB82C39);
-  static const lightDivider = Color(0xFFDCDCE0);
-  static const scrim = Color(0x99000000);
+  static const lightBackground = Color(0xFFF4F5F7);
+  static const lightSurface = Color(0xFFFFFFFF);
+  static const lightText = Color(0xFF111213);
+  static const lightTextSecondary = Color(0xFF52555A);
+  static const lightAccent = Color(0xFF944700);
+  static const lightDivider = Color(0xFFDCDFE2);
+  static const scrim = Color(0xBF111213);
+
+  // Harbor semantic tokens
+  static const harborCanvas = ink;
+  static const harborSurface = graphite;
+  static const harborElevated = surfaceHigh;
+  static const harborRaised = raised;
+  static const harborAccent = red;
+  static const harborInk = white;
+  static const harborInkMuted = mist;
+  static const harborInkSubtle = textDisabled;
+  static const harborEdge = Color(0x8C3C3D3F);
+  static const harborEdgeSoft = Color(0x403C3D3F);
+}
+
+abstract final class HarborRadii {
+  static const sm = 6.0;
+  static const md = 10.0;
+  static const lg = 14.0;
+  static const xl = 20.0;
+  static const xxl = 28.0;
+  static const pill = 9999.0;
 }
 
 abstract final class NovaSpace {
@@ -77,20 +101,20 @@ abstract final class NovaTheme {
     final accent = dark ? NovaColors.redSoft : NovaColors.lightAccent;
     final scheme = ColorScheme(
       brightness: brightness,
-      primary: NovaColors.red,
-      onPrimary: NovaColors.white,
-      primaryContainer: dark ? NovaColors.redDeep : NovaColors.blush,
-      onPrimaryContainer: dark ? NovaColors.white : NovaColors.redDeep,
+      primary: dark ? NovaColors.red : NovaColors.lightAccent,
+      onPrimary: dark ? NovaColors.ink : NovaColors.white,
+      primaryContainer: dark ? NovaColors.white : NovaColors.ink,
+      onPrimaryContainer: dark ? NovaColors.ink : NovaColors.white,
       secondary: accent,
       onSecondary: dark ? NovaColors.ink : NovaColors.white,
-      secondaryContainer: dark ? NovaColors.surfaceHigh : NovaColors.blush,
+      secondaryContainer: dark ? NovaColors.surfaceHigh : const Color(0xFFE8EAED),
       onSecondaryContainer: text,
       tertiary: accent,
       onTertiary: dark ? NovaColors.ink : NovaColors.white,
-      error: dark ? NovaColors.redSoft : NovaColors.redDeep,
+      error: dark ? const Color(0xFFE05252) : const Color(0xFFBA1A1A),
       onError: dark ? NovaColors.ink : NovaColors.white,
-      errorContainer: dark ? NovaColors.redDeep : NovaColors.blush,
-      onErrorContainer: dark ? NovaColors.white : NovaColors.redDeep,
+      errorContainer: dark ? const Color(0xFF38181A) : const Color(0xFFFFDAD6),
+      onErrorContainer: dark ? const Color(0xFFF8B4B4) : const Color(0xFF410002),
       surface: dark ? surface : NovaColors.white,
       onSurface: text,
       surfaceContainerLowest: dark ? canvas : NovaColors.white,
@@ -99,16 +123,12 @@ abstract final class NovaTheme {
           ? (oledDark ? NovaColors.ink : NovaColors.graphite)
           : NovaColors.lightBackground,
       surfaceContainerHigh:
-          dark ? NovaColors.surfaceHigh : NovaColors.lightBackground,
-      // Keep small accent text AA-readable even on the highest surface.
-      // Divider tokens alone miss 4.5:1 against redSoft / lightAccent.
-      surfaceContainerHighest: Color.alphaBlend(
-          (dark ? NovaColors.divider : NovaColors.lightDivider)
-              .withValues(alpha: .8),
-          dark ? canvas : NovaColors.white),
+          dark ? NovaColors.surfaceHigh : const Color(0xFFE8EAED),
+      surfaceContainerHighest:
+          dark ? NovaColors.raised : const Color(0xFFDCDFE2),
       onSurfaceVariant: muted,
-      outline: muted,
-      outlineVariant: dark ? NovaColors.divider : NovaColors.lightDivider,
+      outline: dark ? NovaColors.divider.withValues(alpha: .55) : NovaColors.lightDivider,
+      outlineVariant: dark ? NovaColors.divider.withValues(alpha: .25) : NovaColors.lightDivider,
       shadow: canvas,
       scrim: canvas,
       inverseSurface: dark ? NovaColors.white : NovaColors.graphite,

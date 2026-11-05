@@ -1,22 +1,44 @@
-# NOVA design system
+# NOVA design system (Harbor Cloned Design)
 
 ## Direction
-Cinematic Ink surfaces, calm Nova Red actions, soft red selected labels, original play/film-strip logo, disciplined typography. Glass is reserved for floating navigation and hero chrome.
+Harbor Cool Grey Slate architecture, warm amber `#F4A25C` (`oklch(0.78 0.13 60)`) accents, crisp off-white `#F4F5F7` ink typography, floating island glass dock with solid squircle active indicator, stadium action pills, and 14px media card geometry.
 
 ## Palette
-Only supplied NovaColors values and alpha composites. Dark canvas #141417, surface #232329, elevated #2E2E35, text #FFFFFF, secondary #A4A4AC, accent #E8858D. Light canvas #F6F6F7, surface #FFFFFF, text #141417, secondary #585862, accent #B82C39. Primary action #D13B47 with #FFFFFF text. Error dark #E8858D / light #9E2A34, always with text and icon.
+- **Canvas / Background**: Dark slate `#111213` (Harbor canvas, `oklch(0.18 0.004 260)`), pure black `#000000` for OLED mode.
+- **Surface**: Dark charcoal `#191B1C` (Harbor surface, `oklch(0.22 0.004 260)`).
+- **Elevated**: Elevated charcoal `#252628` (Harbor elevated, `oklch(0.27 0.004 260)`).
+- **Raised**: `#323335` (Harbor raised, `oklch(0.32 0.004 260)`).
+- **Edges & Borders**: `#3C3D3F` with 0.55 opacity for borders (`Color(0x8C3C3D3F)`), 0.25 opacity for soft hairline dividers (`Color(0x403C3D3F)`).
+- **Ink (Typography)**: `#F4F5F7` (Harbor ink, `oklch(0.97 0.003 260)`).
+- **Muted**: `#A8ABAD` (Harbor ink-muted, `oklch(0.72 0.003 260)`).
+- **Subtle**: `#626365` (Harbor ink-subtle, `oklch(0.50 0.003 260)`).
+- **Accent (Primary)**: Harbor warm amber `#F4A25C` (`oklch(0.78 0.13 60)`), deep pressed amber `#C87A38`, soft amber `#F8BE8E`.
+- **Status**: Error `#C53637` (`oklch(0.55 0.18 25)`), Success `#45B164`, Rating & Warning `#F5C451`.
+- **Light Theme**: Canvas `#F4F5F7`, Surface `#FFFFFF`, Ink `#111213`, Secondary `#52555A`, Accent `#944700`, Divider `#DCDFE2`.
 
 ## Typography
-Poppins for Latin and IBM Plex Sans Arabic for Arabic; logo always supplied SVG. Body 16/1.5, supporting 14/1.5, labels 14/1.3, headings 20/24/32/40 with weights 500/600/700. Preserve subtitle font preferences independently.
+Sentient / Serif display hierarchy for hero titles and prominent headings; clean modern sans-serif (Poppins / Switzer / IBM Plex Sans Arabic) for body and UI; Oswald / bold display numbers for Top 10 rank rail. Headings 20/24/32/40 with weights 500/600/700.
 
-## Geometry
-8dp spacing grid: 8,16,24,32,48,64. 4dp optical half step. Radius 12 inputs and controls,16 posters,24 sheets,999 floating navigation. Controls at least48dp. Flat content surfaces; no nested decorative cards.
+## Geometry & Radii
+Harbor token ladder:
+- `sm`: 6dp (small tags, badges)
+- `md`: 10dp (controls, inputs)
+- `lg`: 14dp (poster cards, continue watching cards)
+- `xl`: 20dp (floating bottom dock, dialogs, bottom sheets)
+- `2xl`: 28dp (large containers)
+- `pill`: 9999dp (stadium buttons, filter chips, indicator squircle)
 
-## Responsive
-Compact below600dp: 16dp gutters and bottom dock. Medium600–839dp:24dp gutters and bottom dock. Expanded840dp+: narrow icon-only logical-start rail,32dp gutters and split detail/settings layouts. Landscape hero height bounded by viewport.
-
-## Motion
-120ms press,180ms state,240ms route/expansion, easeOutCubic. Respect OS and in-app reduced motion, stop offscreen animations. Fallback opaque chrome with reduced transparency.
+## Navigation (Harbor Bottom Dock)
+Harbor floating island dock centered at bottom:
+- Elevated surface `#252628` at 85-90% opacity with backdrop blur (20dp radius).
+- Hairline edge-soft border `Color(0x403C3D3F)`.
+- 5 primary destinations: Home, Search, Live TV, Library (My Stuff), Profile/Settings.
+- Iconic Harbor active squircle indicator: solid white/ink pill with dark icon inside (`#111213`).
+- Inactive icons rendered in `ink-subtle` (`#626365`).
+- Profile tab displays user avatar circle.
 
 ## Components
-Theme-level buttons, inputs, switches, sliders, tabs, chips, dialogs and sheets. Shared page header, empty/error message, skeleton, cached image, branded mark and parental gate.
+- **Cinematic Hero**: Full backdrop with smooth vertical fade to `#111213`, title logo or display typography, metadata pills (Year, Runtime, IMDB rating badge, Genre capsules), large stadium Play button (`#F4F5F7` with dark text) + circular action buttons.
+- **Poster Cards**: 14dp rounded corners, hairline border, subtle gradient overlay, rating badge with gold star.
+- **Top 10 Rank Rail**: Styled rank numbers (01..10) positioned beside or behind poster cards.
+- **Continue Watching**: 16:9 cards with bottom-edge progress bar in amber `#F4A25C`.
