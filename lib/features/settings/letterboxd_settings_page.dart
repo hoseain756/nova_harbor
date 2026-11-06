@@ -299,12 +299,17 @@ class _LetterboxdSettingsPageState extends State<LetterboxdSettingsPage> {
                     ),
                     if (session != null)
                       ListTile(
-                        leading: const Icon(LucideIcons.circleCheck),
+                        leading: Icon(LucideIcons.circleCheck,
+                            color: Theme.of(context).colorScheme.primary),
                         title: Text(app.tr('letterboxdSignedIn')),
                         subtitle: Text(session.displayName == null
                             ? '@${session.username}'
                             : '${session.displayName} (@${session.username})'),
                         trailing: TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor:
+                                Theme.of(context).colorScheme.primary,
+                          ),
                           onPressed: () =>
                               unawaited(app.disconnectLetterboxd()),
                           child: Text(app.tr('letterboxdDisconnect')),
@@ -382,7 +387,8 @@ class _LetterboxdSettingsPageState extends State<LetterboxdSettingsPage> {
                           tooltip: app.tr('letterboxdRemove'),
                           onPressed: () =>
                               unawaited(app.removeLetterboxdList(list.id)),
-                          icon: const Icon(LucideIcons.trash2),
+                          icon: Icon(LucideIcons.trash2,
+                              color: Theme.of(context).colorScheme.primary),
                         ),
                       ),
                   ],

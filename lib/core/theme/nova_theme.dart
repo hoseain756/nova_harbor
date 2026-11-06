@@ -314,6 +314,10 @@ abstract final class NovaTheme {
           modalBackgroundColor: scheme.surface,
           surfaceTintColor: Colors.transparent,
           showDragHandle: true,
+          // Netflix sheet chrome: 4×32 #6B6B6B handle above a 16–20dp
+          // top radius surface.
+          dragHandleColor: NovaColors.textDisabled,
+          dragHandleSize: const Size(32, 4),
           elevation: 0,
           modalBarrierColor: scheme.scrim.withValues(alpha: .72),
           shape: const RoundedRectangleBorder(

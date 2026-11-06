@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/models/media_item.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/track/track_link.dart';
 import '../../shared/widgets/image_decode.dart';
@@ -158,6 +159,8 @@ class _TrackerSheetState extends State<_TrackerSheet> {
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final dark = theme.brightness == Brightness.dark;
     final statuses = <(AnimeTrackStatus, String, IconData)>[
       (AnimeTrackStatus.watching, app.tr('message548'), LucideIcons.play),
       (AnimeTrackStatus.completed, app.tr('message549'), LucideIcons.check),
@@ -176,7 +179,8 @@ class _TrackerSheetState extends State<_TrackerSheet> {
                   child: Row(children: [
                     Expanded(
                         child: Text(app.tr('message554'),
-                            style: theme.textTheme.titleLarge)),
+                            style: theme.textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w700))),
                     IconButton(
                         tooltip: app.tr('close'),
                         onPressed:
@@ -192,7 +196,8 @@ class _TrackerSheetState extends State<_TrackerSheet> {
                             Row(children: [
                               if (widget.item.poster != null)
                                 ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
+                                    // Netflix card geometry: 8dp corners.
+                                    borderRadius: BorderRadius.circular(8),
                                     child: NovaNetworkImage(widget.item.poster!,
                                         width: 76,
                                         height: 108,
@@ -221,12 +226,17 @@ class _TrackerSheetState extends State<_TrackerSheet> {
                             ]),
                             const SizedBox(height: 32),
                             if (_loading)
-                              const LinearProgressIndicator()
+                              LinearProgressIndicator(
+                                  minHeight: 2, color: scheme.primary)
                             else if (_loadFailed)
                               Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(app.tr('message556')),
+                                    Text(app.tr('message556'),
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                                color: scheme
+                                                    .onSurfaceVariant)),
                                     const SizedBox(height: 16),
                                     OutlinedButton.icon(
                                         onPressed: _preload,
@@ -240,7 +250,13 @@ class _TrackerSheetState extends State<_TrackerSheet> {
                               Wrap(spacing: 8, runSpacing: 8, children: [
                                 for (final entry in statuses)
                                   ChoiceChip(
-                                      avatar: Icon(entry.$3, size: 18),
+                                      avatar: Icon(entry.$3,
+                                          size: 18,
+                                          // Selected chips invert to a white
+                                          // pill (dark): avatar flips to ink.
+                                          color: _status == entry.$1
+                                              ? scheme.onPrimaryContainer
+                                              : scheme.onSurface),
                                       label: Text(entry.$2),
                                       selected: _status == entry.$1,
                                       padding: const EdgeInsets.symmetric(
@@ -250,9 +266,14 @@ class _TrackerSheetState extends State<_TrackerSheet> {
                                           : (_) => setState(
                                               () => _status = entry.$1))
                               ]),
-                              const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 24),
-                                  child: Divider()),
+                              Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 24),
+                                  child: Divider(
+                                      color: dark
+                                          ? NovaColors.netflixLine
+                                          : scheme.outlineVariant,
+                                      height: 1)),
                               if (_status != null &&
                                   _status != AnimeTrackStatus.completed) ...[
                                 Text(app.tr('message558'),
@@ -309,7 +330,11 @@ class _TrackerSheetState extends State<_TrackerSheet> {
                                           setState(() => _score = value)),
                             ],
                           ]))),
-              const Divider(height: 1),
+              Divider(
+                  height: 1,
+                  color: dark
+                      ? NovaColors.netflixLine
+                      : scheme.outlineVariant),
               Padding(
                   padding: const EdgeInsets.all(20),
                   child: Wrap(
@@ -331,7 +356,8 @@ class _TrackerSheetState extends State<_TrackerSheet> {
                                 ? const SizedBox.square(
                                     dimension: 18,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2))
+                                        strokeWidth: 2,
+                                        color: NovaColors.white))
                                 : const Icon(LucideIcons.check),
                             label: Text(app.tr('message563'))),
                       ])),

@@ -144,6 +144,8 @@ class _CatalogBrowserPageState extends State<CatalogBrowserPage>
   Widget build(BuildContext context) {
     context.select<AppState, bool>((app) => app.english);
     final app = context.read<AppState>();
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
     final items = _items
         .where((item) => _typeFilter == 'all' || item.type == _typeFilter)
         .toList();
@@ -158,7 +160,10 @@ class _CatalogBrowserPageState extends State<CatalogBrowserPage>
             .compareTo(double.tryParse(a.rating ?? '') ?? 0));
     }
     return Scaffold(
-      appBar: AppBar(title: Text(app.tr('message582'))),
+      appBar: AppBar(
+          title: Text(app.tr('message582'),
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w700))),
       body: Center(
           child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 1440),
@@ -189,23 +194,28 @@ class _CatalogBrowserPageState extends State<CatalogBrowserPage>
                               },
                               textInputAction: TextInputAction.search,
                               decoration: InputDecoration(
+                                // Netflix search field: flat #323232 block,
+                                // 4dp corners, no ring until focused.
                                 filled: true,
-                                fillColor: Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerLow,
+                                fillColor: dark
+                                    ? NovaColors.raised
+                                    : theme.colorScheme.surfaceContainerHigh,
                                 contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: NovaSpace.md,
-                                    vertical: NovaSpace.md),
+                                    horizontal: 12, vertical: 14),
                                 border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(4),
+                                    borderSide: BorderSide.none),
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(4),
                                     borderSide: BorderSide.none),
                                 focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(4),
                                     borderSide: BorderSide(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary)),
-                                prefixIcon: const Icon(LucideIcons.search),
+                                        color: theme.colorScheme.onSurface,
+                                        width: 1)),
+                                prefixIcon: const Icon(LucideIcons.search,
+                                    size: 20,
+                                    color: NovaColors.textDisabled),
                                 hintText: app.tr('message586'),
                                 suffixIcon: _search.text.isEmpty
                                     ? null
@@ -217,7 +227,9 @@ class _CatalogBrowserPageState extends State<CatalogBrowserPage>
                                           unawaited(_load());
                                           setState(() {});
                                         },
-                                        icon: const Icon(LucideIcons.x)),
+                                        icon: const Icon(LucideIcons.x,
+                                            size: 18,
+                                            color: NovaColors.textDisabled)),
                               ),
                             ))))),
             SliverToBoxAdapter(
@@ -242,12 +254,15 @@ class _CatalogBrowserPageState extends State<CatalogBrowserPage>
                                         'series' => LucideIcons.tv,
                                         _ => LucideIcons.layoutGrid,
                                       },
-                                      size: 16),
+                                      size: 16,
+                                      // White selected pill (dark) flips the
+                                      // avatar to ink to stay visible.
+                                      color: _typeFilter == entry.$1
+                                          ? theme
+                                              .colorScheme.onPrimaryContainer
+                                          : theme.colorScheme.onSurface),
                                   label: Text(entry.$2),
                                   selected: _typeFilter == entry.$1,
-                                  selectedColor: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer,
                                   showCheckmark: false,
                                   onSelected: (_) =>
                                       setState(() => _typeFilter = entry.$1)),
@@ -262,7 +277,7 @@ class _CatalogBrowserPageState extends State<CatalogBrowserPage>
                                       isDense: true,
                                       border: OutlineInputBorder(
                                           borderRadius:
-                                              BorderRadius.circular(12))),
+                                              BorderRadius.circular(4))),
                                   onChanged: (value) {
                                     if (value != null) {
                                       setState(() => _sort = value);
@@ -298,8 +313,9 @@ class _CatalogBrowserPageState extends State<CatalogBrowserPage>
                           unawaited(_load(query: _search.text.trim()))))
             else ...[
               if (_loading)
-                const SliverToBoxAdapter(
-                    child: LinearProgressIndicator(minHeight: 2)),
+                SliverToBoxAdapter(
+                    child: LinearProgressIndicator(
+                        minHeight: 2, color: theme.colorScheme.primary)),
               SliverPadding(
                   padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 48),
                   sliver: SliverLayoutBuilder(builder: (context, constraints) {

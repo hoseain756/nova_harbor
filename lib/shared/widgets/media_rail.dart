@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/state/app_state.dart';
-import '../../core/theme/horse_theme.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../core/models/media_item.dart';
 import 'poster_card.dart';
 
@@ -76,11 +76,16 @@ class MediaRail extends StatelessWidget {
                 : 0)
         : 0.0;
     final railHeight = posterHeight + cardTextHeight;
+    // Netflix rail geometry: 16dp phone gutter (34 on wide canvases, matching
+    // the Top 10 rail); the vertical rhythm stays owned by the callers via
+    // sectionSpacing (24dp max between sections).
+    final gutter = wide ? 34.0 : 16.0;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: wide ? 34 : 20),
+          padding: EdgeInsets.symmetric(horizontal: gutter),
           child: Row(
             children: [
               Expanded(
@@ -92,7 +97,10 @@ class MediaRail extends StatelessWidget {
                             .textTheme
                             .titleMedium
                             ?.copyWith(
-                                fontSize: 18, fontWeight: FontWeight.w700),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color:
+                                    dark ? NovaColors.white : null),
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +113,10 @@ class MediaRail extends StatelessWidget {
                                 .titleMedium
                                 ?.copyWith(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w700),
+                                    fontWeight: FontWeight.w700,
+                                    color: dark
+                                        ? NovaColors.white
+                                        : null),
                           ),
                           const SizedBox(height: 1),
                           Text(
@@ -128,7 +139,7 @@ class MediaRail extends StatelessWidget {
         SizedBox(
           height: railHeight,
           child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: wide ? 34 : 20),
+            padding: EdgeInsets.symmetric(horizontal: gutter),
             scrollDirection: Axis.horizontal,
             itemCount: items.length,
             separatorBuilder: (_, __) => SizedBox(
@@ -197,7 +208,10 @@ class _SectionChevron extends StatelessWidget {
               child: Icon(
                 forward ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
                 size: 20,
-                color: NovaTheme.of(context).muted,
+                // Netflix rail link mark: white on the dark canvas.
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? NovaColors.white
+                    : NovaTheme.of(context).ink,
               ),
             ),
           ),

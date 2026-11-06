@@ -12,7 +12,7 @@ import 'package:volume_controller/volume_controller.dart';
 import '../../core/models/media_item.dart';
 import '../../core/state/app_state.dart';
 import '../../core/storage/skip_timing_credentials.dart';
-import '../../core/theme/horse_theme.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../core/torrent/torrent_models.dart';
 import '../../core/torrent/torrent_service.dart';
 import '../media/sources_page.dart';
@@ -889,6 +889,19 @@ class _CoreVideoPlayerPageState extends State<CoreVideoPlayerPage>
           barrierDismissible: false,
           builder: (dialogContext) => AlertDialog(
             scrollable: true,
+            backgroundColor: NovaColors.graphite,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            titleTextStyle:
+                Theme.of(dialogContext).textTheme.titleLarge?.copyWith(
+                      color: NovaColors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+            contentTextStyle:
+                Theme.of(dialogContext).textTheme.bodyMedium?.copyWith(
+                      color: NovaColors.mist,
+                    ),
             title: Text(
               NovaStrings.lookup(english, 'playerLeaveTitle'),
             ),
@@ -898,10 +911,21 @@ class _CoreVideoPlayerPageState extends State<CoreVideoPlayerPage>
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
+                style: TextButton.styleFrom(
+                  foregroundColor: NovaColors.white,
+                  textStyle:
+                      Theme.of(dialogContext).textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                ),
                 child: Text(NovaStrings.lookup(english, 'cancel')),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(dialogContext).pop(true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: NovaColors.red,
+                  foregroundColor: NovaColors.white,
+                ),
                 child: Text(
                   NovaStrings.lookup(english, 'playerLeaveAction'),
                 ),
@@ -2250,7 +2274,8 @@ class _CoreVideoPlayerPageState extends State<CoreVideoPlayerPage>
         if (!didPop) unawaited(_requestClose());
       },
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        // Netflix player: the canvas is always black, in both theme modes.
+        backgroundColor: NovaColors.ink,
         // The chrome follows the reference layout (LTR media convention);
         // Arabic strings still render correctly via bidi.
         body: GestureDetector(
@@ -2609,17 +2634,15 @@ class _CoreVideoPlayerPageState extends State<CoreVideoPlayerPage>
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: HorseTheme.canvas,
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(color: HorseTheme.line),
+                                color: NovaColors.raised,
+                                borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 _cardCountdown(duration, position),
-                                style: TextStyle(
-                                  color:
-                                      NovaColors.white.withValues(alpha: .54),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
+                                style: const TextStyle(
+                                  color: NovaColors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -2644,9 +2667,8 @@ class _CoreVideoPlayerPageState extends State<CoreVideoPlayerPage>
                               padding: const EdgeInsetsDirectional.only(top: 3),
                               child: Text(
                                 'S${(nextEpisode['season'] as num).toInt()}:E${(nextEpisode['episode'] as num).toInt()}',
-                                style: TextStyle(
-                                  color:
-                                      NovaColors.white.withValues(alpha: .54),
+                                style: const TextStyle(
+                                  color: NovaColors.mist,
                                   fontSize: 12,
                                 ),
                               ),
@@ -2776,13 +2798,17 @@ class _ErrorPanel extends StatelessWidget {
             children: [
               const Icon(
                 LucideIcons.circleAlert,
-                size: 46,
-                color: NovaColors.redSoft,
+                size: 44,
+                color: NovaColors.mist,
               ),
               const SizedBox(height: 14),
               Text(
                 NovaStrings.lookup(english, 'message29'),
-                style: Theme.of(context).textTheme.titleLarge,
+                style: const TextStyle(
+                  color: NovaColors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -2792,7 +2818,10 @@ class _ErrorPanel extends StatelessWidget {
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: const TextStyle(
+                    color: NovaColors.mist,
+                    fontSize: 13,
+                  ),
                 ),
               if (onRetry != null) ...[
                 const SizedBox(height: 16),
@@ -2874,6 +2903,7 @@ class _TorrentHud extends StatelessWidget {
                 color: NovaColors.white,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
+                shadows: PlayerPalette.iconShadow,
               ),
             ),
           ),

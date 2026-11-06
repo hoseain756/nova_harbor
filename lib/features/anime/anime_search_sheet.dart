@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../core/data/catalog_repository.dart';
 import '../../core/models/media_item.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import '../shell/nova_browse_widgets.dart';
 import '../../shared/widgets/poster_card.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -152,7 +153,7 @@ class _AnimeSearchSheetState extends State<_AnimeSearchSheet> {
                     Expanded(
                         child: Text(app.tr('message536'),
                             style: theme.textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.w800))),
+                                ?.copyWith(fontWeight: FontWeight.w700))),
                     IconButton(
                         tooltip: app.tr('close'),
                         onPressed: () => Navigator.pop(context),
@@ -166,6 +167,11 @@ class _AnimeSearchSheetState extends State<_AnimeSearchSheet> {
                       onChanged: _onChanged,
                       textInputAction: TextInputAction.search,
                       decoration: InputDecoration(
+                          // Netflix search field: flat #323232 block, 4dp
+                          // corners (light keeps the themed input surface).
+                          fillColor: theme.brightness == Brightness.dark
+                              ? NovaColors.raised
+                              : theme.colorScheme.surfaceContainerHigh,
                           prefixIcon: const Icon(LucideIcons.search),
                           hintText: app.tr('message537'),
                           suffixIcon: _query.text.isEmpty
@@ -200,15 +206,24 @@ class _AnimeSearchSheetState extends State<_AnimeSearchSheet> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(LucideIcons.sparkles,
-                                        size: 48,
-                                        color: theme.colorScheme.secondary),
+                                        size: 44,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant),
                                     const SizedBox(height: 16),
                                     Text(app.tr('message538'),
-                                        style: theme.textTheme.titleLarge,
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                                color: theme
+                                                    .colorScheme.onSurface),
                                         textAlign: TextAlign.center),
                                     const SizedBox(height: 8),
                                     Text(app.tr('message539'),
-                                        textAlign: TextAlign.center),
+                                        textAlign: TextAlign.center,
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                                fontSize: 13,
+                                                color: theme.colorScheme
+                                                    .onSurfaceVariant)),
                                   ])))
                       : FutureBuilder<List<MediaItem>>(
                           future: _results,
@@ -229,7 +244,13 @@ class _AnimeSearchSheetState extends State<_AnimeSearchSheet> {
                                                 snapshot.hasError
                                                     ? app.tr('message540')
                                                     : app.tr('message541'),
-                                                textAlign: TextAlign.center),
+                                                textAlign: TextAlign.center,
+                                                style: theme
+                                                    .textTheme.bodyMedium
+                                                    ?.copyWith(
+                                                        color: theme
+                                                            .colorScheme
+                                                            .onSurfaceVariant)),
                                             if (snapshot.hasError) ...[
                                               const SizedBox(height: 16),
                                               FilledButton(
@@ -269,14 +290,17 @@ class _AnimeSearchSheetState extends State<_AnimeSearchSheet> {
                                             width: width,
                                             onTap: () => _open(items[i])),
                                         if (_resolving.contains(items[i].id))
-                                          const PositionedDirectional(
+                                          PositionedDirectional(
                                               top: 8,
                                               end: 8,
                                               child: SizedBox.square(
                                                   dimension: 24,
                                                   child:
                                                       CircularProgressIndicator(
-                                                          strokeWidth: 2))),
+                                                          strokeWidth: 2,
+                                                          color: theme
+                                                              .colorScheme
+                                                              .primary))),
                                       ]));
                             });
                           })),

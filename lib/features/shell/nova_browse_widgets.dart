@@ -86,7 +86,8 @@ class NovaBrowseSkeleton extends StatelessWidget {
                 itemBuilder: (_, __) => Container(
                     height: 104,
                     decoration: BoxDecoration(
-                        color: color, borderRadius: BorderRadius.circular(20))),
+                        // Netflix card geometry: flat 8dp corners.
+                        color: color, borderRadius: BorderRadius.circular(8))),
               )
             : GridView.builder(
                 padding: const EdgeInsets.all(24),
@@ -103,7 +104,7 @@ class NovaBrowseSkeleton extends StatelessWidget {
                           child: Container(
                               decoration: BoxDecoration(
                                   color: color,
-                                  borderRadius: BorderRadius.circular(16)))),
+                                  borderRadius: BorderRadius.circular(8)))),
                       const SizedBox(height: 12),
                       Container(height: 12, width: 112, color: color),
                       const SizedBox(height: 8),
@@ -246,16 +247,18 @@ class NovaBrowseDestination extends StatelessWidget {
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) => Material(
+        // Netflix shortcut row: flat #161616 block, 8dp corners, muted icon.
         color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(8),
           child: Padding(
               padding: const EdgeInsets.all(20),
               child: Row(children: [
                 Icon(icon,
-                    color: Theme.of(context).colorScheme.secondary, size: 24),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    size: 24),
                 const SizedBox(width: 16),
                 Expanded(
                     child: Column(

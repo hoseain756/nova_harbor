@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../l10n/nova_strings.dart';
 
 /// Local-only parent credential, deliberately excluded from settings/cloud sync.
@@ -157,15 +158,28 @@ class _PinDialogState extends State<_PinDialog> {
   @override
   Widget build(BuildContext context) {
     final s = NovaStrings.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return AlertDialog(
       scrollable: true,
+      backgroundColor: dark ? NovaColors.ink : Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       icon: Icon(LucideIcons.shieldCheck,
-          color: Theme.of(context).colorScheme.secondary, size: 32),
-      title: Text(s.text(widget.create ? 'createPin' : 'parentGate')),
+          color: dark ? NovaColors.white : null, size: 32),
+      titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: dark ? NovaColors.white : null),
+      title: Center(
+        child: Text(s.text(widget.create ? 'createPin' : 'parentGate')),
+      ),
       content: SizedBox(
           width: 400,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(s.text(widget.create ? 'createPinBody' : 'parentExplain')),
+            Text(s.text(widget.create ? 'createPinBody' : 'parentExplain'),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: dark
+                        ? NovaColors.mist
+                        : Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 24),
             TextField(
                 controller: _pin,
@@ -175,8 +189,11 @@ class _PinDialogState extends State<_PinDialog> {
                 maxLength: 8,
                 inputFormatters: _pinFormatters,
                 textDirection: TextDirection.ltr,
-                decoration:
-                    InputDecoration(labelText: s.text('pin'), counterText: ''),
+                decoration: InputDecoration(
+                    labelText: s.text('pin'),
+                    counterText: '',
+                    fillColor:
+                        dark ? NovaColors.raised : null),
                 onSubmitted: (_) {
                   if (!widget.create) _submit();
                 }),
@@ -190,7 +207,9 @@ class _PinDialogState extends State<_PinDialog> {
                   inputFormatters: _pinFormatters,
                   textDirection: TextDirection.ltr,
                   decoration: InputDecoration(
-                      labelText: s.text('confirmPin'), counterText: ''),
+                      labelText: s.text('confirmPin'),
+                      counterText: '',
+                      fillColor: dark ? NovaColors.raised : null),
                   onSubmitted: (_) => _submit())
             ],
             if (_error != null)
@@ -200,7 +219,8 @@ class _PinDialogState extends State<_PinDialog> {
                       liveRegion: true,
                       child: Text(_error!,
                           style: TextStyle(
-                              color: Theme.of(context).colorScheme.error)))),
+                              color: NovaColors.warning,
+                              fontWeight: FontWeight.w600)))),
           ])),
       actions: [
         TextButton(

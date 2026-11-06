@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
 import '../core/auth/account_controller.dart';
@@ -7,6 +8,7 @@ import '../core/theme/nova_theme.dart';
 import '../features/account/account_pages.dart';
 import '../features/shell/main_shell.dart';
 import '../l10n/nova_strings.dart';
+import '../shared/widgets/nova_brand.dart';
 
 /// The only entrance to viewer state after onboarding.
 class AccountGate extends StatefulWidget {
@@ -128,6 +130,7 @@ class _AccountGateState extends State<AccountGate> {
       animation: Listenable.merge([widget.account, app]),
       builder: (context, _) {
         final account = widget.account;
+        final dark = Theme.of(context).brightness == Brightness.dark;
         if (app.sync.accountId != null &&
             app.sync.accountId != account.user?.id) {
           if (!_clearingForeignScope) {
@@ -137,8 +140,12 @@ class _AccountGateState extends State<AccountGate> {
               _clearingForeignScope = false;
             });
           }
-          return const Scaffold(
-              body: Center(child: CircularProgressIndicator()));
+          return Scaffold(
+              body: Center(
+                  child: CircularProgressIndicator(
+                      color: dark
+                          ? NovaColors.red
+                          : Theme.of(context).colorScheme.primary)));
         }
         if (account.passwordRecoveryPending) {
           return AccountNewPasswordPage(
@@ -168,7 +175,17 @@ class _AccountGateState extends State<AccountGate> {
                       child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(NovaStrings.of(context).text('accountGenericError')),
+              // Netflix error state: muted icon, white w600 headline, red CTA.
+              Icon(LucideIcons.circleAlert,
+                  size: 44,
+                  color: dark
+                      ? NovaColors.mist
+                      : Theme.of(context).colorScheme.onSurfaceVariant),
+              const SizedBox(height: 16),
+              Text(NovaStrings.of(context).text('accountGenericError'),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: dark ? NovaColors.white : null)),
               const SizedBox(height: 16),
               FilledButton(
                   onPressed: account.refresh,
@@ -305,6 +322,7 @@ class _DefaultProfileUnlockState extends State<_DefaultProfileUnlock> {
   @override
   Widget build(BuildContext context) {
     final s = NovaStrings.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -316,6 +334,13 @@ class _DefaultProfileUnlockState extends State<_DefaultProfileUnlock> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Netflix welcome language: brand top-start on the black
+                  // canvas, bold white headline, red primary CTA, white links.
+                  const Align(
+                    alignment: AlignmentDirectional.topStart,
+                    child: NovaBrand(width: 148),
+                  ),
+                  const SizedBox(height: NovaSpace.xl),
                   Center(
                       child: ProfileAvatar(
                     packKey: widget.profile.avatarPackKey,
@@ -325,26 +350,46 @@ class _DefaultProfileUnlockState extends State<_DefaultProfileUnlock> {
                   const SizedBox(height: NovaSpace.lg),
                   Text(widget.profile.name,
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineSmall),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(color: dark ? NovaColors.white : null)),
                   const SizedBox(height: NovaSpace.lg),
                   TextField(
                     controller: _pin,
                     obscureText: true,
                     maxLength: 6,
                     keyboardType: TextInputType.number,
-                    decoration:
-                        InputDecoration(labelText: s.text('profilePin')),
+                    decoration: InputDecoration(
+                        labelText: s.text('profilePin'),
+                        fillColor: dark ? NovaColors.raised : null),
                     onSubmitted: (_) => _unlock(),
                   ),
                   if (_failed)
-                    Text(s.text('profileUnlockFailed'),
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.error)),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(top: 12),
+                      child: Text(s.text('profileUnlockFailed'),
+                          style: TextStyle(
+                              color: NovaColors.warning,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  const SizedBox(height: NovaSpace.md),
                   FilledButton(
                       onPressed: _busy ? null : _unlock,
+                      style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(52)),
                       child: Text(s.text('profileUnlock'))),
                   TextButton(
                       onPressed: _busy ? null : widget.onChooseAnother,
+                      style: TextButton.styleFrom(
+                        foregroundColor: dark
+                            ? NovaColors.white
+                            : Theme.of(context).colorScheme.onSurface,
+                        disabledForegroundColor: (dark
+                                ? NovaColors.white
+                                : Theme.of(context).colorScheme.onSurface)
+                            .withValues(alpha: .45),
+                        textStyle:
+                            const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       child: Text(s.text('profileChooseAnother'))),
                 ],
               ),

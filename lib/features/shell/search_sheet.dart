@@ -159,7 +159,7 @@ class _SearchSheetState extends State<SearchSheet>
                     Expanded(
                         child: Text(app.tr('message682'),
                             style: theme.textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.w800))),
+                                ?.copyWith(fontWeight: FontWeight.w700))),
                     IconButton(
                         tooltip: app.tr('message692'),
                         onPressed: () => Navigator.pop(context),
@@ -256,23 +256,34 @@ class _SearchSheetState extends State<SearchSheet>
                                                 _failed
                                                     ? LucideIcons.wifiOff
                                                     : LucideIcons.search,
-                                                size: 48,
+                                                size: 44,
                                                 color: theme
-                                                    .colorScheme.secondary),
+                                                    .colorScheme
+                                                    .onSurfaceVariant),
                                             const SizedBox(height: 16),
                                             Text(
                                                 _failed
                                                     ? app.tr('message694')
                                                     : app.tr('message695'),
-                                                style:
-                                                    theme.textTheme.titleLarge,
+                                                style: theme.textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                        color: theme.colorScheme
+                                                            .onSurface),
                                                 textAlign: TextAlign.center),
                                             const SizedBox(height: 8),
                                             Text(
                                                 _failed
                                                     ? app.tr('message696')
                                                     : app.tr('message697'),
-                                                textAlign: TextAlign.center),
+                                                textAlign: TextAlign.center,
+                                                style: theme
+                                                    .textTheme.bodyMedium
+                                                    ?.copyWith(
+                                                        fontSize: 13,
+                                                        color: theme
+                                                            .colorScheme
+                                                            .onSurfaceVariant)),
                                             if (_failed) ...[
                                               const SizedBox(height: 16),
                                               FilledButton(

@@ -490,7 +490,8 @@ class DetailCastCrew extends StatelessWidget {
                     width: 92,
                     height: 136,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(HarborRadii.md),
+                      // Netflix card geometry: 8dp card corners.
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: scheme.outlineVariant.withValues(alpha: .5),
                         width: 1,
@@ -595,7 +596,7 @@ class DetailProduction extends StatelessWidget {
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                       color: scheme.surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(12)),
+                                      borderRadius: BorderRadius.circular(8)),
                                   child: company.logo == null
                                       ? Icon(LucideIcons.clapperboard,
                                           color: scheme.onSurfaceVariant)

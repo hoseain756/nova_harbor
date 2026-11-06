@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import '../shell/noor_dock_tabs.dart';
 import 'addons_page.dart';
 import 'integrations_page.dart';
@@ -24,9 +25,8 @@ class _Destination {
 
 class _SettingsGroup {
   const _SettingsGroup(
-      this.id, this.icon, this.title, this.description, this.destinations);
+      this.id, this.title, this.description, this.destinations);
   final String id;
-  final IconData icon;
   final String title;
   final String description;
   final List<_Destination> destinations;
@@ -164,7 +164,6 @@ class _SettingsPageState extends State<SettingsPage> {
     return [
       _SettingsGroup(
           'account',
-          LucideIcons.userRound,
           app.tr('settingsGroupAccountFamily'),
           app.tr('settingsGroupAccountFamilyDescription'), [
         byId['account']!,
@@ -173,7 +172,6 @@ class _SettingsPageState extends State<SettingsPage> {
       ]),
       _SettingsGroup(
           'watching',
-          LucideIcons.play,
           app.tr('settingsGroupWatching'),
           app.tr('settingsGroupWatchingDescription'), [
         byId['playback']!,
@@ -183,7 +181,6 @@ class _SettingsPageState extends State<SettingsPage> {
       ]),
       _SettingsGroup(
           'content',
-          LucideIcons.layoutGrid,
           app.tr('settingsGroupContentServices'),
           app.tr('settingsGroupContentServicesDescription'), [
         byId['display']!,
@@ -193,7 +190,6 @@ class _SettingsPageState extends State<SettingsPage> {
       ]),
       _SettingsGroup(
           'app',
-          LucideIcons.palette,
           app.tr('settingsGroupAppPersonalization'),
           app.tr('settingsGroupAppPersonalizationDescription'), [
         byId['appearance']!,
@@ -216,43 +212,72 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _groupTile(
       BuildContext context, _SettingsGroup group, bool wide, String? selected) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final line = dark
+        ? NovaColors.netflixLine
+        : Theme.of(context).colorScheme.outlineVariant;
+    final highlight = dark
+        ? NovaColors.surfaceHigh
+        : Theme.of(context).colorScheme.secondaryContainer;
     final entries = <Widget>[
-      for (final destination in group.destinations) ...[
-        const Divider(height: 1, indent: 20, endIndent: 20),
+      for (var i = 0; i < group.destinations.length; i++) ...[
+        if (i > 0)
+          Divider(
+              height: 1,
+              thickness: 1,
+              indent: 20,
+              endIndent: 20,
+              color: line),
         ColoredBox(
-          color: wide && destination.id == selected
-              ? Theme.of(context).colorScheme.secondaryContainer
+          color: wide && group.destinations[i].id == selected
+              ? highlight
               : Colors.transparent,
           child: SettingsTile(
-            icon: destination.icon,
-            title: destination.title,
-            subtitle: wide ? null : destination.description,
-            onTap: () => _openDestination(context, destination, wide),
+            icon: group.destinations[i].icon,
+            title: group.destinations[i].title,
+            subtitle: wide ? null : group.destinations[i].description,
+            onTap: () =>
+                _openDestination(context, group.destinations[i], wide),
           ),
         ),
       ],
     ];
+    // Netflix account-page pattern: typographic group headers (no cards,
+    // no leading icons) with flat rows revealed underneath.
     return Padding(
-      padding: const EdgeInsetsDirectional.only(bottom: 12),
+      padding: const EdgeInsetsDirectional.only(bottom: 16),
       child: Material(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        clipBehavior: Clip.antiAlias,
+        color: Colors.transparent,
         child: ExpansionTile(
           key: ValueKey('settings-group-${group.id}'),
           initiallyExpanded: wide && group.id == 'app',
-          leading: Icon(group.icon,
-              color: Theme.of(context).colorScheme.secondary, size: 22),
           title: Text(group.title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600)),
-          subtitle: Text(group.description,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          tilePadding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: dark
+                      ? NovaColors.white
+                      : Theme.of(context).colorScheme.onSurface)),
+          subtitle: Padding(
+              padding: const EdgeInsetsDirectional.only(top: 4),
+              child: Text(group.description,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 13,
+                      color: dark
+                          ? NovaColors.mist
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant))),
+          tilePadding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 8),
           childrenPadding: const EdgeInsetsDirectional.only(bottom: 8),
+          backgroundColor: Colors.transparent,
+          collapsedBackgroundColor: Colors.transparent,
+          iconColor: dark
+              ? NovaColors.textDisabled
+              : Theme.of(context).colorScheme.onSurfaceVariant,
+          collapsedIconColor: dark
+              ? NovaColors.textDisabled
+              : Theme.of(context).colorScheme.onSurfaceVariant,
           shape: const Border(),
           collapsedShape: const Border(),
           children: entries,
@@ -281,6 +306,10 @@ class _SettingsPageState extends State<SettingsPage> {
     return LayoutBuilder(builder: (context, constraints) {
       final wide = constraints.maxWidth >= 1000;
       final selected = destinations.where((d) => d.id == _selected).firstOrNull;
+      final dark = Theme.of(context).brightness == Brightness.dark;
+      final highlight = dark
+          ? NovaColors.surfaceHigh
+          : Theme.of(context).colorScheme.secondaryContainer;
       final menu = ListView(
           padding: EdgeInsetsDirectional.fromSTEB(
               wide ? 24 : 20,
@@ -311,14 +340,10 @@ class _SettingsPageState extends State<SettingsPage> {
             if (widget.onOpenLibrary != null && query.isEmpty)
               Padding(
                   padding: const EdgeInsetsDirectional.only(bottom: 12),
-                  child: Material(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(24),
-                      clipBehavior: Clip.antiAlias,
-                      child: SettingsTile(
-                          icon: LucideIcons.bookmark,
-                          title: app.tr('message474'),
-                          onTap: widget.onOpenLibrary))),
+                  child: SettingsTile(
+                      icon: LucideIcons.bookmark,
+                      title: app.tr('message474'),
+                      onTap: widget.onOpenLibrary)),
             if (query.isEmpty)
               for (final group in groups)
                 _groupTile(context, group, wide, _selected),
@@ -328,22 +353,26 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: SettingsInfoBanner(
                       icon: LucideIcons.searchX,
                       message: app.tr('message475'))),
-            for (final (destination, group) in results)
-              Padding(
-                  padding: const EdgeInsetsDirectional.only(bottom: 4),
-                  child: DecoratedBox(
-                      decoration: BoxDecoration(
-                          color: wide && destination.id == _selected
-                              ? Theme.of(context).colorScheme.secondaryContainer
-                              : Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16)),
-                      child: SettingsTile(
-                          icon: destination.icon,
-                          title: destination.title,
-                          subtitle:
-                              '${group.title} · ${destination.description}',
-                          onTap: () =>
-                              _openDestination(context, destination, wide)))),
+            for (final (index, (destination, group)) in results.indexed) ...[
+              if (index > 0)
+                Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: dark
+                        ? NovaColors.netflixLine
+                        : Theme.of(context).colorScheme.outlineVariant),
+              ColoredBox(
+                  color: wide && destination.id == _selected
+                      ? highlight
+                      : Colors.transparent,
+                  child: SettingsTile(
+                      icon: destination.icon,
+                      title: destination.title,
+                      subtitle:
+                          '${group.title} · ${destination.description}',
+                      onTap: () =>
+                          _openDestination(context, destination, wide))),
+            ],
           ]);
       return Scaffold(
           appBar: AppBar(title: Text(app.tr('settings'))),

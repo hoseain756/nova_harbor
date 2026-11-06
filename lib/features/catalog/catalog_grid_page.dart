@@ -96,9 +96,15 @@ class _CatalogGridPageState extends State<CatalogGridPage>
   Widget build(BuildContext context) {
     context.select<AppState, bool>((app) => app.english);
     final app = context.read<AppState>();
+    final theme = Theme.of(context);
     final items = _items ?? const <MediaItem>[];
     return Scaffold(
-      appBar: AppBar(title: Text(app.tr('message591')), actions: [
+      appBar: AppBar(
+          // Netflix page chrome: bold white title on the black canvas.
+          title: Text(app.tr('message591'),
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w700)),
+          actions: [
         if (widget.loader != null)
           IconButton(
               tooltip: app.tr('message68'),
@@ -132,8 +138,9 @@ class _CatalogGridPageState extends State<CatalogGridPage>
                         : () => unawaited(_load())))
           else ...[
             if (_loading)
-              const SliverToBoxAdapter(
-                  child: LinearProgressIndicator(minHeight: 2)),
+              SliverToBoxAdapter(
+                  child: LinearProgressIndicator(
+                      minHeight: 2, color: theme.colorScheme.primary)),
             SliverPadding(
                 padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 48),
                 sliver: SliverLayoutBuilder(builder: (context, constraints) {

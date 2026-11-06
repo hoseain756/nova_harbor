@@ -1172,7 +1172,7 @@ class _ErrorView extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 576),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(color: scheme.error.withValues(alpha: .40)),
               color: scheme.error.withValues(alpha: .10),
             ),
@@ -1183,7 +1183,7 @@ class _ErrorView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          OutlinedButton.icon(
+          FilledButton.icon(
             onPressed: onRetry,
             icon: const Icon(LucideIcons.refreshCw, size: 18),
             label: Text(NovaStrings.lookup(english, 'message120')),
@@ -1395,12 +1395,15 @@ class _SimklPersonalRatingState extends State<_SimklPersonalRating> {
       future: _rating,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Padding(
-            padding: EdgeInsets.only(top: 12),
+          return Padding(
+            padding: const EdgeInsets.only(top: 12),
             child: SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2)),
+                // Netflix spinner: red accent on the dark detail canvas.
+                child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Theme.of(context).colorScheme.primary)),
           );
         }
         final current = snapshot.data;
@@ -1761,7 +1764,7 @@ class _LinkedProvidersProgress extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 12, 9),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: Theme.of(context)
                         .colorScheme

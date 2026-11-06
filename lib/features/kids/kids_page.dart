@@ -126,46 +126,50 @@ class _KidsPageState extends State<KidsPage> with NovaCatalogRefresh<KidsPage> {
               items.firstOrNull;
           return CustomScrollView(slivers: [
             SliverToBoxAdapter(
-                child: ColoredBox(
-                    color: theme.colorScheme.primaryContainer,
-                    child: Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            24, 32, 24, 24),
+                child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(24, 32, 24, 0),
+                    child: Container(
+                        // Netflix Kids header: flat #323232 block, 8dp corners,
+                        // white w700 copy with the branded red accent.
+                        decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(8)),
+                        padding:
+                            const EdgeInsetsDirectional.fromSTEB(24, 24, 24, 24),
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(children: [
                                 Icon(LucideIcons.sparkles,
-                                    color: theme.colorScheme.onPrimaryContainer,
-                                    size: 32),
+                                    color: theme.colorScheme.primary, size: 32),
                                 const SizedBox(width: 12),
                                 Expanded(
                                     child: Text(app.tr('message596'),
                                         style: theme.textTheme.titleLarge
                                             ?.copyWith(
-                                                color: theme.colorScheme
-                                                    .onPrimaryContainer,
-                                                fontWeight: FontWeight.w800))),
+                                                color:
+                                                    theme.colorScheme.onSurface,
+                                                fontWeight: FontWeight.w700))),
                                 Icon(LucideIcons.shieldCheck,
-                                    color: theme.colorScheme.onPrimaryContainer)
+                                    color:
+                                        theme.colorScheme.onSurfaceVariant)
                               ]),
                               const SizedBox(height: 24),
                               Text(app.tr('message597'),
                                   style: theme.textTheme.headlineLarge
                                       ?.copyWith(
-                                          color: theme
-                                              .colorScheme.onPrimaryContainer,
-                                          fontWeight: FontWeight.w900,
+                                          color: theme.colorScheme.onSurface,
+                                          fontWeight: FontWeight.w700,
                                           height: 1.25)),
                               const SizedBox(height: 16),
                               Text(app.tr('message598'),
                                   style: theme.textTheme.bodyLarge?.copyWith(
-                                      color: theme
-                                          .colorScheme.onPrimaryContainer)),
+                                      color:
+                                          theme.colorScheme.onSurfaceVariant)),
                             ])))),
             SliverToBoxAdapter(
                 child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsetsDirectional.fromSTEB(24, 16, 24, 24),
                     child: Wrap(spacing: 12, runSpacing: 12, children: [
                       for (final filter in [
                         ('all', app.tr('message599'), LucideIcons.sparkles),
@@ -173,7 +177,13 @@ class _KidsPageState extends State<KidsPage> with NovaCatalogRefresh<KidsPage> {
                         ('series', app.tr('message601'), LucideIcons.tv),
                       ])
                         ChoiceChip(
-                            avatar: Icon(filter.$3, size: 22),
+                            avatar: Icon(filter.$3,
+                                size: 22,
+                                // Selected chips invert to a white pill (dark):
+                                // the avatar must flip to ink to stay visible.
+                                color: _filter == filter.$1
+                                    ? theme.colorScheme.onPrimaryContainer
+                                    : theme.colorScheme.onSurface),
                             label: Text(filter.$2),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 16),
@@ -210,17 +220,22 @@ class _KidsPageState extends State<KidsPage> with NovaCatalogRefresh<KidsPage> {
                             snapshot.hasError
                                 ? LucideIcons.cloudOff
                                 : LucideIcons.shieldCheck,
-                            size: 56,
-                            color: theme.colorScheme.secondary),
+                            size: 44,
+                            color: theme.colorScheme.onSurfaceVariant),
                         const SizedBox(height: 24),
                         Text(
                             snapshot.hasError
                                 ? app.tr('message602')
                                 : app.tr('message603'),
                             textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineSmall),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                                color: theme.colorScheme.onSurface)),
                         const SizedBox(height: 12),
-                        Text(app.tr('message604'), textAlign: TextAlign.center),
+                        Text(app.tr('message604'),
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                                fontSize: 13,
+                                color: theme.colorScheme.onSurfaceVariant)),
                         const SizedBox(height: 24),
                         FilledButton.icon(
                             onPressed: _retry,

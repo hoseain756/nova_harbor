@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/platform/app_icon_service.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import 'widgets/settings_tiles.dart';
 
 class AppIconSettingsPage extends StatefulWidget {
@@ -64,15 +65,20 @@ class _AppIconSettingsPageState extends State<AppIconSettingsPage> {
         _ => 'assets/brand/ios/with_background/AppIcon-120.png',
       };
 
-  Widget _preview(BuildContext context, String id) {
+  Widget _preview(BuildContext context, String id, {required bool selected}) {
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 64,
       height: 64,
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.outlineVariant),
+        color:
+            dark ? NovaColors.netflixTile : scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: selected ? scheme.primary : scheme.outlineVariant,
+          width: selected ? 2 : 1,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Image.asset(_imageFor(id), fit: BoxFit.contain, cacheWidth: 160),
@@ -116,23 +122,42 @@ class _AppIconSettingsPageState extends State<AppIconSettingsPage> {
                       child: Column(
                         children: [
                           for (final id in selection.ids)
-                            RadioListTile<String>(
-                              value: id,
-                              selected: selection.selected == id,
-                              title: Text(switch (id) {
-                                'clear' => app.tr('appIconClear'),
-                                'dark' => app.tr('appIconDark'),
-                                _ => app.tr('appIconClassic'),
-                              }),
-                              subtitle: Text(switch (id) {
-                                'clear' => app.tr('appIconClearDescription'),
-                                'dark' => app.tr('appIconDarkDescription'),
-                                _ => app.tr('appIconClassicDescription'),
-                              }),
-                              secondary: _preview(context, id),
-                              contentPadding:
+                            Container(
+                              margin:
                                   const EdgeInsetsDirectional.fromSTEB(
-                                      12, 8, 20, 8),
+                                      12, 8, 12, 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: selection.selected == id
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .outlineVariant,
+                                  width: selection.selected == id ? 2 : 1,
+                                ),
+                              ),
+                              child: RadioListTile<String>(
+                                value: id,
+                                selected: selection.selected == id,
+                                title: Text(switch (id) {
+                                  'clear' => app.tr('appIconClear'),
+                                  'dark' => app.tr('appIconDark'),
+                                  _ => app.tr('appIconClassic'),
+                                }),
+                                subtitle: Text(switch (id) {
+                                  'clear' =>
+                                    app.tr('appIconClearDescription'),
+                                  'dark' =>
+                                    app.tr('appIconDarkDescription'),
+                                  _ => app.tr('appIconClassicDescription'),
+                                }),
+                                secondary: _preview(context, id,
+                                    selected: selection.selected == id),
+                                contentPadding:
+                                    const EdgeInsetsDirectional.fromSTEB(
+                                        12, 8, 20, 8),
+                              ),
                             ),
                         ],
                       ),

@@ -1,19 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-/// NOVA's editorial settings primitives. Surface boundaries are reserved for
-/// groups; individual controls share quiet separators and generous touch areas.
+import '../../../core/theme/nova_theme.dart';
+
+/// NOVA's Netflix settings primitives. Flat typographic rows on the page
+/// canvas — no card surfaces; groups breathe with whitespace and hairline
+/// dividers sit between rows of the same section.
 class SettingsSectionTitle extends StatelessWidget {
   const SettingsSectionTitle({super.key, required this.title});
   final String title;
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(0, 24, 0, 12),
-        child: Text(title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.secondary,
-                fontWeight: FontWeight.w700)),
-      );
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 16, 0, 8),
+      child: Text(title,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: dark
+                  ? NovaColors.white
+                  : Theme.of(context).colorScheme.onSurface)),
+    );
+  }
 }
 
 class SettingsPageIntro extends StatelessWidget {
@@ -28,7 +37,10 @@ class SettingsPageIntro extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (icon != null) ...[
             Icon(icon,
-                color: Theme.of(context).colorScheme.secondary, size: 32),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? NovaColors.mist
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                size: 32),
             const SizedBox(height: 20),
           ],
           Text(title,
@@ -57,29 +69,41 @@ class SettingsContentSection extends StatelessWidget {
   final String? description;
   final List<Widget> children;
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsetsDirectional.only(bottom: 24),
-        child:
-            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          SettingsSectionTitle(title: title),
-          if (description != null)
-            Padding(
-                padding: const EdgeInsetsDirectional.only(bottom: 16),
-                child: Text(description!,
-                    style: Theme.of(context).textTheme.bodySmall)),
-          Material(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            clipBehavior: Clip.antiAlias,
-            child: Column(children: [
-              for (var i = 0; i < children.length; i++) ...[
-                if (i > 0) const Divider(height: 1, indent: 20, endIndent: 20),
-                children[i],
-              ]
-            ]),
-          ),
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(bottom: 24),
+      child:
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        SettingsSectionTitle(title: title),
+        if (description != null)
+          Padding(
+              padding: const EdgeInsetsDirectional.only(bottom: 12),
+              child: Text(description!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 13,
+                      color: dark
+                          ? NovaColors.mist
+                          : Theme.of(context).colorScheme.onSurfaceVariant))),
+        // Netflix rows: no card surface — the section sits directly on the
+        // canvas with 1dp hairline separators between rows.
+        Column(children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0)
+              Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: 20,
+                  endIndent: 20,
+                  color: dark
+                      ? NovaColors.netflixLine
+                      : Theme.of(context).colorScheme.outlineVariant),
+            children[i],
+          ]
         ]),
-      );
+      ]),
+    );
+  }
 }
 
 class SettingsTile extends StatelessWidget {
@@ -96,22 +120,37 @@ class SettingsTile extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
   @override
-  Widget build(BuildContext context) => Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 56),
           child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 12, 16),
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 16, 12),
             child: Row(children: [
               Icon(icon,
-                  color: Theme.of(context).colorScheme.secondary, size: 22),
+                  color: dark
+                      ? NovaColors.mist
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: 20),
               const SizedBox(width: 16),
               Expanded(
                   child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    Text(title, style: Theme.of(context).textTheme.titleSmall),
+                    Text(title,
+                        style: Theme.of(context).textTheme.titleSmall
+                            ?.copyWith(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: dark
+                                    ? NovaColors.white
+                                    : Theme.of(context).colorScheme.onSurface)),
                     if (subtitle != null) ...[
                       const SizedBox(height: 4),
                       Text(subtitle!,
@@ -119,9 +158,12 @@ class SettingsTile extends StatelessWidget {
                               .textTheme
                               .bodySmall
                               ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant))
+                                  fontSize: 13,
+                                  color: dark
+                                      ? NovaColors.mist
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant))
                     ],
                   ])),
               const SizedBox(width: 12),
@@ -131,11 +173,15 @@ class SettingsTile extends StatelessWidget {
                           ? LucideIcons.chevronLeft
                           : LucideIcons.chevronRight,
                       size: 18,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      color: dark
+                          ? NovaColors.textDisabled
+                          : Theme.of(context).colorScheme.onSurfaceVariant),
             ]),
           ),
         ),
-      );
+      ),
+    );
+  }
 }
 
 class SettingsInfoBanner extends StatelessWidget {
@@ -148,26 +194,37 @@ class SettingsInfoBanner extends StatelessWidget {
   final IconData icon;
   final bool error;
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(16)),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(icon,
-              size: 20,
-              color: error
-                  ? Theme.of(context).colorScheme.error
-                  : Theme.of(context).colorScheme.secondary),
-          const SizedBox(width: 12),
-          Expanded(
-              child: Text(message,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(height: 1.6))),
-        ]),
-      );
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+          color: dark
+              ? NovaColors.graphite
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+              color: dark
+                  ? NovaColors.netflixLine
+                  : Theme.of(context).colorScheme.outlineVariant)),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(icon,
+            size: 20,
+            color: error
+                ? Theme.of(context).colorScheme.error
+                : dark
+                    ? NovaColors.mist
+                    : Theme.of(context).colorScheme.onSurfaceVariant),
+        const SizedBox(width: 12),
+        Expanded(
+            child: Text(message,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(fontSize: 13, height: 1.6))),
+      ]),
+    );
+  }
 }
 
 class SettingsOptimisticSwitch extends StatefulWidget {
@@ -269,12 +326,17 @@ class SettingsLanguageDropdown extends StatelessWidget {
           if (next != null) onChanged(next);
         },
         isExpanded: expanded,
-        borderRadius: BorderRadius.circular(20),
-        style: Theme.of(context)
-            .textTheme
-            .titleSmall
-            ?.copyWith(color: Theme.of(context).colorScheme.secondary),
-        icon: const Icon(LucideIcons.chevronDown, size: 18),
+        borderRadius: BorderRadius.circular(8),
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? NovaColors.mist
+                : Theme.of(context).colorScheme.onSurfaceVariant),
+        icon: Icon(LucideIcons.chevronDown,
+            size: 18,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? NovaColors.textDisabled
+                : Theme.of(context).colorScheme.onSurfaceVariant),
       ));
 }
 
@@ -287,7 +349,7 @@ Future<bool> confirmSettingsAction(BuildContext context,
         context: context,
         builder: (dialogContext) => AlertDialog(
               icon: Icon(LucideIcons.shieldAlert,
-                  color: Theme.of(context).colorScheme.secondary),
+                  color: Theme.of(context).colorScheme.error),
               title: Text(title),
               content: Text(message),
               actions: [

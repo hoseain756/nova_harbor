@@ -18,10 +18,25 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/torrent/torrent_service.dart';
 import '../../core/version.dart';
 import '../../core/update/app_update_service.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../shared/widgets/noor_toast.dart';
 import '../../shared/widgets/nova_brand.dart';
 import 'widgets/settings_tiles.dart';
 import '../downloads/downloads_page.dart';
+
+/// Netflix surfaces: graphite fill, 8dp corners, hairline #2E2E2E edge.
+BoxDecoration _netflixSurface(BuildContext context) {
+  final theme = Theme.of(context);
+  final dark = theme.brightness == Brightness.dark;
+  return BoxDecoration(
+    color: dark ? NovaColors.graphite : theme.colorScheme.surface,
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(
+        color: dark ? NovaColors.divider : theme.colorScheme.outlineVariant),
+  );
+}
+
+Color _netflixRed(BuildContext context) => Theme.of(context).colorScheme.primary;
 
 class SettingsDataPage extends StatelessWidget {
   const SettingsDataPage({super.key, this.section = 'all'});
@@ -249,18 +264,13 @@ class _SupabaseSyncCardState extends State<_SupabaseSyncCard> {
     return Container(
       margin: const EdgeInsetsDirectional.only(bottom: 8),
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
+      decoration: _netflixSurface(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(LucideIcons.cloud,
-                  color: Theme.of(context).colorScheme.secondary, size: 22),
+              Icon(LucideIcons.cloud, color: _netflixRed(context), size: 22),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -300,6 +310,15 @@ class _SupabaseSyncCardState extends State<_SupabaseSyncCard> {
             alignment: AlignmentDirectional.centerEnd,
             child: FilledButton.tonal(
               onPressed: _busy ? null : _syncNow,
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? NovaColors.raised
+                    : Theme.of(context).colorScheme.surfaceContainerHigh,
+                foregroundColor:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? NovaColors.white
+                        : Theme.of(context).colorScheme.onSurface,
+              ),
               child: _busy
                   ? SizedBox(
                       width: 17,
@@ -495,18 +514,13 @@ class _TorrentDownloadsCardState extends State<_TorrentDownloadsCard> {
     return Container(
       margin: const EdgeInsetsDirectional.only(bottom: 14),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
+      decoration: _netflixSurface(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(LucideIcons.zap,
-                  color: Theme.of(context).colorScheme.secondary, size: 20),
+              Icon(LucideIcons.zap, color: _netflixRed(context), size: 20),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -520,10 +534,11 @@ class _TorrentDownloadsCardState extends State<_TorrentDownloadsCard> {
               if (entries != null && entries.isNotEmpty)
                 TextButton(
                   onPressed: _busy ? null : _clearAll,
+                  style: TextButton.styleFrom(
+                    foregroundColor: _netflixRed(context),
+                  ),
                   child: Text(
                     NovaStrings.lookup(english, 'message389'),
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.error),
                   ),
                 ),
             ],
@@ -547,6 +562,11 @@ class _TorrentDownloadsCardState extends State<_TorrentDownloadsCard> {
             SettingsInfoBanner(message: _scanError!, error: true),
             TextButton(
                 onPressed: _scan,
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).brightness == Brightness.dark
+                      ? NovaColors.white
+                      : Theme.of(context).colorScheme.onSurface,
+                ),
                 child: Text(NovaStrings.lookup(english, 'message393'))),
           ],
           if (entries != null && entries.isNotEmpty) ...[
@@ -693,23 +713,27 @@ class _CacheResetCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsetsDirectional.only(bottom: 8),
       child: Material(
-        color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? NovaColors.graphite
+            : Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? NovaColors.divider
+                  : Theme.of(context).colorScheme.outlineVariant),
         ),
         clipBehavior: Clip.antiAlias,
         child: ListTile(
           onTap: () => unawaited(_openSheet(context)),
           minVerticalPadding: 10,
           leading: Icon(LucideIcons.hardDrive,
-              color: Theme.of(context).colorScheme.secondary),
+              color: Theme.of(context).colorScheme.onSurface),
           title: Text(NovaStrings.lookup(english, 'message400')),
           subtitle:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(_labelFor(hours, english),
-                style:
-                    TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                style: TextStyle(color: _netflixRed(context))),
             const SizedBox(height: 6),
             Text(detail),
           ]),
@@ -761,15 +785,17 @@ class _CacheResetCard extends StatelessWidget {
               ),
               for (final (hours, key) in _choices)
                 ListTile(
-                  leading: Icon(
-                    current == hours
-                        ? LucideIcons.circleDot
-                        : LucideIcons.circle,
-                    color: current == hours
-                        ? Theme.of(context).colorScheme.secondary
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  title: Text(
+                    NovaStrings.lookup(english, key),
+                    style: TextStyle(
+                      fontWeight:
+                          current == hours ? FontWeight.w700 : FontWeight.w500,
+                    ),
                   ),
-                  title: Text(NovaStrings.lookup(english, key)),
+                  trailing: current == hours
+                      ? Icon(LucideIcons.check,
+                          size: 20, color: _netflixRed(context))
+                      : null,
                   onTap: () {
                     Navigator.pop(sheetContext);
                     unawaited(app.setSetting('cacheResetHours', hours));
@@ -784,12 +810,12 @@ class _CacheResetCard extends StatelessWidget {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: _netflixRed(context),
                         ),
                       )
                     : Icon(
                         LucideIcons.brushCleaning,
-                        color: Theme.of(context).colorScheme.secondary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                 title: Text(NovaStrings.lookup(english, 'message402')),
                 onTap: busy
@@ -835,38 +861,44 @@ class _DataRow extends StatelessWidget {
   final bool destructive;
 
   @override
-  Widget build(BuildContext context) => Container(
-        margin: const EdgeInsetsDirectional.only(bottom: 8),
-        child: Material(
-          color: Theme.of(context).colorScheme.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side:
-                BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: ListTile(
-            onTap: onTap,
-            minVerticalPadding: 10,
-            leading: Icon(icon,
-                color: destructive
-                    ? Theme.of(context).colorScheme.error
-                    : Theme.of(context).colorScheme.secondary),
-            title: Text(title,
-                style: TextStyle(
-                    color: destructive
-                        ? Theme.of(context).colorScheme.error
-                        : null)),
-            subtitle:
-                Text(detail, maxLines: 2, overflow: TextOverflow.ellipsis),
-            trailing: Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? LucideIcons.chevronLeft
-                    : LucideIcons.chevronRight,
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
-          ),
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final line =
+        dark ? NovaColors.netflixLine : theme.colorScheme.outlineVariant;
+    final red = _netflixRed(context);
+    final muted =
+        dark ? NovaColors.mist : theme.colorScheme.onSurfaceVariant;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: line, width: 1)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          onTap: onTap,
+          contentPadding: EdgeInsets.zero,
+          minVerticalPadding: 12,
+          leading: Icon(icon, size: 22, color: destructive ? red : muted),
+          title: Text(title,
+              style: TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.w500,
+                  color: destructive ? red : null)),
+          subtitle: Text(detail,
+              style: TextStyle(fontSize: 13, color: muted),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis),
+          trailing: Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? LucideIcons.chevronLeft
+                  : LucideIcons.chevronRight,
+              size: 18,
+              color: muted),
         ),
-      );
+      ),
+    );
+  }
 }
 
 class SettingsAboutPage extends StatefulWidget {

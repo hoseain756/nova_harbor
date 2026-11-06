@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/models/custom_list.dart';
 import '../../core/models/media_item.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../l10n/nova_strings.dart';
 import 'custom_lists_page.dart';
 import '../shared_collections/shared_collection_picker.dart';
@@ -18,7 +19,9 @@ Future<void> showCustomListPicker(BuildContext context, MediaItem item) async {
     isScrollControlled: true,
     showDragHandle: true,
     constraints: const BoxConstraints(maxWidth: 720),
-    builder: (sheetContext) => SizedBox(
+    builder: (sheetContext) {
+      final dark = Theme.of(sheetContext).brightness == Brightness.dark;
+      return SizedBox(
         height: MediaQuery.sizeOf(sheetContext).height * .72,
         child: SafeArea(
             top: false,
@@ -35,7 +38,10 @@ Future<void> showCustomListPicker(BuildContext context, MediaItem item) async {
                                 style: Theme.of(sheetContext)
                                     .textTheme
                                     .headlineSmall
-                                    ?.copyWith(fontWeight: FontWeight.w800)),
+                                    ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color:
+                                            dark ? NovaColors.white : null)),
                             const SizedBox(height: 8),
                             Text(item.name,
                                 maxLines: 2,
@@ -52,47 +58,59 @@ Future<void> showCustomListPicker(BuildContext context, MediaItem item) async {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(LucideIcons.library,
-                                            size: 48,
-                                            color: Theme.of(sheetContext)
-                                                .colorScheme
-                                                .primary),
+                                            size: 44,
+                                            color: dark
+                                                ? NovaColors.mist
+                                                : Theme.of(sheetContext)
+                                                    .colorScheme
+                                                    .onSurfaceVariant),
                                         const SizedBox(height: 16),
                                         Text(app.tr('message632'),
                                             style: Theme.of(sheetContext)
                                                 .textTheme
-                                                .titleLarge,
+                                                .titleLarge
+                                                ?.copyWith(
+                                                    color: dark
+                                                        ? NovaColors.white
+                                                        : null),
                                             textAlign: TextAlign.center),
                                         const SizedBox(height: 8),
                                         Text(app.tr('message633'),
-                                            textAlign: TextAlign.center),
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                color: dark
+                                                    ? NovaColors.mist
+                                                    : Theme.of(sheetContext)
+                                                        .colorScheme
+                                                        .onSurfaceVariant)),
                                       ])))
                           : ListView.separated(
                               padding: const EdgeInsetsDirectional.fromSTEB(
                                   24, 0, 24, 24),
                               itemCount: app.customLists.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 8),
+                              separatorBuilder: (_, __) => Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: dark
+                                      ? NovaColors.netflixLine
+                                      : null),
                               itemBuilder: (_, index) {
                                 final list = app.customLists[index];
                                 final exists = list.items
                                     .any((entry) => entry.id == item.id);
-                                return Material(
-                                    color: Theme.of(sheetContext)
-                                        .colorScheme
-                                        .surfaceContainerLow,
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: ListTile(
+                                return ListTile(
                                         minTileHeight: 80,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(16)),
                                         leading: Icon(
                                             exists
                                                 ? LucideIcons.circleCheck
                                                 : LucideIcons.library,
-                                            color: Theme.of(sheetContext)
-                                                .colorScheme
-                                                .primary),
+                                            color: exists
+                                                ? NovaColors.red
+                                                : dark
+                                                    ? NovaColors.mist
+                                                    : Theme.of(sheetContext)
+                                                        .colorScheme
+                                                        .onSurfaceVariant),
                                         title: Text(list.name,
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis),
@@ -105,7 +123,7 @@ Future<void> showCustomListPicker(BuildContext context, MediaItem item) async {
                                         onTap: exists
                                             ? null
                                             : () => Navigator.pop(
-                                                sheetContext, list)));
+                                                sheetContext, list));
                               })),
                   const Divider(height: 1),
                   Padding(
@@ -124,7 +142,11 @@ Future<void> showCustomListPicker(BuildContext context, MediaItem item) async {
                           const SizedBox(height: 8),
                           SizedBox(
                               width: double.infinity,
-                              child: OutlinedButton.icon(
+                              child: FilledButton.tonalIcon(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: NovaColors.raised,
+                                    foregroundColor: NovaColors.white,
+                                  ),
                                   onPressed: () =>
                                       Navigator.pop(sheetContext, 'shared'),
                                   icon: const Icon(LucideIcons.usersRound),
@@ -132,8 +154,8 @@ Future<void> showCustomListPicker(BuildContext context, MediaItem item) async {
                                       .text('sharedAddToCollection')))),
                         ],
                       ])),
-                ]))),
-  );
+                ])));
+      });
   if (selection == null || !context.mounted) return;
   if (selection == 'shared') {
     await showSharedCollectionPicker(context, item);

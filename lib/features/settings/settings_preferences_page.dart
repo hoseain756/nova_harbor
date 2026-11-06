@@ -8,6 +8,7 @@ import '../player/playback_entry_page.dart' show useCorePlayerByDefault;
 import '../player/engine/picture_quality.dart';
 import '../player/widgets/subtitle_font_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../shared/widgets/color_picker_dialog.dart';
 import 'widgets/settings_tiles.dart';
 
@@ -503,7 +504,14 @@ class SettingsPreferencesPage extends StatelessWidget {
                           subtitle: app.tr('playbackBackendIosDescription'),
                           trailing: Text(
                             app.tr('playbackBackendMpv'),
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? NovaColors.mist
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant),
                           ),
                         ),
                       ...group.value.map((key) => _PreferenceTile(
@@ -570,7 +578,7 @@ class _PictureQualitySettings extends StatelessWidget {
               subtitle: NovaStrings.lookup(english, choice.$4),
               trailing: selected == choice.$1
                   ? Icon(LucideIcons.check,
-                      size: 20, color: Theme.of(context).colorScheme.secondary)
+                      size: 20, color: Theme.of(context).colorScheme.primary)
                   : const SizedBox(width: 20),
               onTap: () => context
                   .read<AppState>()
@@ -626,12 +634,20 @@ class _PreferenceTile extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  Text(title, style: Theme.of(context).textTheme.titleSmall),
+                  Text(title,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontSize: 15, fontWeight: FontWeight.w500)),
                   const SizedBox(height: 6),
                   if (item.control != _Control.color)
                     Text(_formatValue(item, value, english),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.secondary)),
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? NovaColors.mist
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant)),
                   if (item.descriptionArabic != null ||
                       item.descriptionEnglish != null) ...[
                     const SizedBox(height: 4),
@@ -640,8 +656,7 @@ class _PreferenceTile extends StatelessWidget {
                           ? item.descriptionEnglish ?? ''
                           : item.descriptionArabic ?? '',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 13,
                           ),
                     ),
                   ],
@@ -652,7 +667,10 @@ class _PreferenceTile extends StatelessWidget {
                 Directionality.of(context) == TextDirection.rtl
                     ? LucideIcons.chevronLeft
                     : LucideIcons.chevronRight,
-                size: 18),
+                size: 18,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? NovaColors.textDisabled
+                    : Theme.of(context).colorScheme.onSurfaceVariant),
           ]),
         ));
   }
@@ -688,7 +706,9 @@ class _PreferenceTile extends StatelessWidget {
     if (item.control == _Control.select) {
       final selected = await showModalBottomSheet<String>(
         context: context,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? NovaColors.graphite
+            : Theme.of(context).colorScheme.surface,
         showDragHandle: true,
         isScrollControlled: true,
         constraints:
@@ -703,16 +723,21 @@ class _PreferenceTile extends StatelessWidget {
                   child: Text(english ? item.english : item.arabic,
                       style: Theme.of(context).textTheme.titleLarge)),
               for (final option in item.options)
+                // Netflix selection rows: flat, w700 label + red check at the
+                // END for the active choice — no leading radio glyphs.
                 ListTile(
-                  leading: Icon(
-                    current?.toString() == option.value
-                        ? LucideIcons.circleDot
-                        : LucideIcons.circle,
-                    color: current?.toString() == option.value
-                        ? Theme.of(context).colorScheme.secondary
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  title: Text(english ? option.english : option.arabic),
+                  contentPadding:
+                      const EdgeInsetsDirectional.symmetric(horizontal: 20),
+                  title: Text(english ? option.english : option.arabic,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: current?.toString() == option.value
+                              ? FontWeight.w700
+                              : FontWeight.w400)),
+                  trailing: current?.toString() == option.value
+                      ? Icon(LucideIcons.check,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary)
+                      : null,
                   onTap: () => Navigator.pop(context, option.value),
                 ),
             ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import 'widgets/settings_tiles.dart';
 
 class StatsPage extends StatelessWidget {
@@ -30,6 +31,15 @@ class StatsPage extends StatelessWidget {
             }).length)
         .toList();
     final peak = counts.fold<int>(1, (a, b) => a > b ? a : b);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final line = dark
+        ? NovaColors.netflixLine
+        : Theme.of(context).colorScheme.outlineVariant;
+    final metrics = <(String, String)>[
+      ('$watchedCount', app.tr('message512')),
+      (watchedHours.toStringAsFixed(1), app.tr('message513')),
+      ('$activeAddons', app.tr('message514')),
+    ];
     return Scaffold(
         appBar: AppBar(title: Text(app.tr('message466'))),
         body: Center(
@@ -46,41 +56,31 @@ class StatsPage extends StatelessWidget {
                           title: app.tr('message510'),
                           description: app.tr('message511'),
                           icon: LucideIcons.chartNoAxesCombined),
-                      LayoutBuilder(
-                          builder: (context, constraints) =>
-                              Wrap(spacing: 16, runSpacing: 16, children: [
-                                for (final metric in [
-                                  (
-                                    LucideIcons.circlePlay,
-                                    '$watchedCount',
-                                    app.tr('message512')
-                                  ),
-                                  (
-                                    LucideIcons.clock,
-                                    watchedHours.toStringAsFixed(1),
-                                    app.tr('message513')
-                                  ),
-                                  (
-                                    LucideIcons.puzzle,
-                                    '$activeAddons',
-                                    app.tr('message514')
-                                  )
-                                ])
-                                  SizedBox(
-                                      width: constraints.maxWidth >= 640
-                                          ? (constraints.maxWidth - 32) / 3
-                                          : constraints.maxWidth,
-                                      child: _Metric(
-                                          icon: metric.$1,
-                                          value: metric.$2,
-                                          label: metric.$3)),
-                              ])),
+                      // Netflix stat strip: a flat 2-column grid — big bold
+                      // numbers, muted labels, hairline grid lines, no boxes.
+                      Table(
+                          border: TableBorder(
+                              horizontalInside:
+                                  BorderSide(width: 1, color: line),
+                              verticalInside:
+                                  BorderSide(width: 1, color: line)),
+                          children: [
+                            for (var i = 0; i < metrics.length; i += 2)
+                              TableRow(children: [
+                                _Metric(
+                                    value: metrics[i].$1,
+                                    label: metrics[i].$2),
+                                i + 1 < metrics.length
+                                    ? _Metric(
+                                        value: metrics[i + 1].$1,
+                                        label: metrics[i + 1].$2)
+                                    : const SizedBox(),
+                              ]),
+                          ]),
                       SettingsSectionTitle(title: app.tr('message515')),
                       Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(24)),
+                          padding:
+                              const EdgeInsetsDirectional.only(top: 4),
                           child: Column(children: [
                             for (var i = 0; i < days.length; i++)
                               Padding(
@@ -103,6 +103,9 @@ class StatsPage extends StatelessWidget {
                                             child: LinearProgressIndicator(
                                                 value: counts[i] / peak,
                                                 minHeight: 8,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
                                                 borderRadius:
                                                     BorderRadius.circular(4)))),
                                     const SizedBox(width: 16),
@@ -128,13 +131,18 @@ class StatsPage extends StatelessWidget {
                           contentPadding: const EdgeInsetsDirectional.symmetric(
                               vertical: 8),
                           leading: CircleAvatar(
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
+                              backgroundColor: dark
+                                  ? NovaColors.raised
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest,
                               child: Icon(LucideIcons.film,
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
-                                  size: 20)),
+                                  color: dark
+                                      ? NovaColors.mist
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                  size: 18)),
                           title: Text(entry.item.name),
                           subtitle: Text(MaterialLocalizations.of(context)
                               .formatMediumDate(
@@ -147,8 +155,17 @@ class StatsPage extends StatelessWidget {
                     child: history.isEmpty
                         ? const SizedBox.shrink()
                         : OutlinedButton.icon(
-                            icon: const Icon(LucideIcons.trash2),
-                            label: Text(app.tr('message519')),
+                            icon: Icon(LucideIcons.trash2,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.error),
+                            label: Text(app.tr('message519'),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface)),
                             onPressed: () async {
                               final clear = await confirmSettingsAction(context,
                                   title: app.tr('message361'),
@@ -164,20 +181,31 @@ class StatsPage extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({required this.icon, required this.value, required this.label});
-  final IconData icon;
+  const _Metric({required this.value, required this.label});
   final String value, label;
   @override
-  Widget build(BuildContext context) => Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(24)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, color: Theme.of(context).colorScheme.secondary, size: 24),
-        const SizedBox(height: 24),
-        Text(value, style: Theme.of(context).textTheme.displaySmall),
-        const SizedBox(height: 4),
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
-      ]));
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+            vertical: 16, horizontal: 16),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(value,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: dark
+                          ? NovaColors.white
+                          : Theme.of(context).colorScheme.onSurface)),
+              const SizedBox(height: 4),
+              Text(label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      color: dark
+                          ? NovaColors.mist
+                          : Theme.of(context).colorScheme.onSurfaceVariant)),
+            ]));
+  }
 }

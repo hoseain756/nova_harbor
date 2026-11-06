@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/media_item.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../features/anime/anime_tracker_sheet.dart';
 import 'nova_network_image.dart';
 import 'image_decode.dart';
@@ -23,6 +24,15 @@ Future<void> showMediaQuickLook(BuildContext context,
   if (action == 'watch') onOpen();
   if (action == 'track') await showAnimeTrackerSheet(context, item);
 }
+
+/// Netflix secondary action: white label on the #323232 fill.
+ButtonStyle _quickLookSecondary(BuildContext context) =>
+    FilledButton.styleFrom(
+      backgroundColor: NovaColors.raised,
+      foregroundColor: NovaColors.white,
+      disabledBackgroundColor: NovaColors.raised.withValues(alpha: .5),
+      disabledForegroundColor: NovaColors.white.withValues(alpha: .5),
+    );
 
 class _QuickLook extends StatelessWidget {
   const _QuickLook({required this.item});
@@ -46,7 +56,7 @@ class _QuickLook extends StatelessWidget {
               children: [
                 Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(8),
                       child: SizedBox(
                           width: 96,
                           height: 144,
@@ -63,11 +73,19 @@ class _QuickLook extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                         Text(item.name,
-                            style: Theme.of(context).textTheme.titleLarge),
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? NovaColors.white
+                                        : null)),
                         const SizedBox(height: 8),
                         if (item.releaseInfo != null)
                           Text(item.releaseInfo!,
-                              style: Theme.of(context).textTheme.bodySmall),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                      color: scheme.onSurfaceVariant)),
                         if (item.description?.isNotEmpty == true) ...[
                           const SizedBox(height: 12),
                           Text(item.description!,
@@ -90,14 +108,9 @@ class _QuickLook extends StatelessWidget {
                     icon: const Icon(LucideIcons.play),
                     label: Text(app.tr('message95'))),
                 const SizedBox(height: 16),
-                ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(inLibrary
-                        ? LucideIcons.bookmarkCheck
-                        : LucideIcons.bookmarkPlus),
-                    title: Text(
-                        inLibrary ? app.tr('message96') : app.tr('message97')),
-                    onTap: () async {
+                FilledButton.tonalIcon(
+                    style: _quickLookSecondary(context),
+                    onPressed: () async {
                       await app.toggleWatchlist(item);
                       if (context.mounted) {
                         NoorToast.show(
@@ -107,14 +120,21 @@ class _QuickLook extends StatelessWidget {
                                 : app.tr('message92'));
                         Navigator.pop(context);
                       }
-                    }),
-                ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                        watched ? LucideIcons.circleCheck : LucideIcons.eye),
-                    title: Text(
-                        watched ? app.tr('message98') : app.tr('message99')),
-                    onTap: watched
+                    },
+                    icon: Icon(inLibrary
+                        ? LucideIcons.bookmarkCheck
+                        : LucideIcons.bookmarkPlus),
+                    label: Text(
+                        inLibrary ? app.tr('message96') : app.tr('message97'))),
+                Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? NovaColors.netflixLine
+                        : null),
+                FilledButton.tonalIcon(
+                    style: _quickLookSecondary(context),
+                    onPressed: watched
                         ? null
                         : () async {
                             await app.recordPlayback(item,
@@ -123,13 +143,25 @@ class _QuickLook extends StatelessWidget {
                               NoorToast.show(context, app.tr('message94'));
                               Navigator.pop(context);
                             }
-                          }),
-                if (canTrack)
-                  ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(LucideIcons.listChecks),
-                      title: Text(app.tr('message100')),
-                      onTap: () => Navigator.pop(context, 'track')),
+                          },
+                    icon: Icon(
+                        watched ? LucideIcons.circleCheck : LucideIcons.eye),
+                    label: Text(
+                        watched ? app.tr('message98') : app.tr('message99'))),
+                if (canTrack) ...[
+                  Divider(
+                      height: 1,
+                      thickness: 1,
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? NovaColors.netflixLine
+                              : null),
+                  FilledButton.tonalIcon(
+                      style: _quickLookSecondary(context),
+                      onPressed: () => Navigator.pop(context, 'track'),
+                      icon: const Icon(LucideIcons.listChecks),
+                      label: Text(app.tr('message100'))),
+                ],
               ]),
         ));
   }

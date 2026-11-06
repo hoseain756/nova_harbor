@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/data/catalog_repository.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 
 /// Order and visibility apply immediately to installed add-on catalogs.
 /// Keys include the add-on identity, so similarly named rows stay independent.
@@ -70,8 +71,18 @@ class CatalogSettingsPage extends StatelessWidget {
                 key: ValueKey(row.key),
                 padding: const EdgeInsetsDirectional.only(bottom: 6),
                 child: Material(
-                  color: scheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(16),
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? NovaColors.graphite
+                          : scheme.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? NovaColors.divider
+                            : scheme.outlineVariant),
+                  ),
+                  clipBehavior: Clip.antiAlias,
                   child: SwitchListTile.adaptive(
                     secondary: const Icon(LucideIcons.gripVertical),
                     title: Text(row.title),

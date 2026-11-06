@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/addon.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../shared/widgets/image_decode.dart';
 import 'widgets/settings_tiles.dart';
 
@@ -189,8 +190,16 @@ class _AddonRow extends StatelessWidget {
     return Padding(
         padding: const EdgeInsetsDirectional.only(bottom: 12),
         child: Material(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? NovaColors.graphite
+              : Theme.of(context).colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? NovaColors.divider
+                    : Theme.of(context).colorScheme.outlineVariant),
+          ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
               onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
@@ -200,7 +209,7 @@ class _AddonRow extends StatelessWidget {
                 child: Column(children: [
                   Row(children: [
                     ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(8),
                         child: Container(
                             width: 48,
                             height: 48,
@@ -250,7 +259,7 @@ class _AddonRow extends StatelessWidget {
                                 ?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .secondary))),
+                                        .onSurfaceVariant))),
                     IconButton(
                         tooltip: app.tr('message234'),
                         onPressed: index == 0
@@ -356,8 +365,14 @@ class _AddonDetailsPage extends StatelessWidget {
                     if (!configurable)
                       SettingsInfoBanner(message: app.tr('message248')),
                     const SizedBox(height: 32),
-                    OutlinedButton.icon(
-                        icon: const Icon(LucideIcons.trash2),
+                    TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor:
+                              Theme.of(context).colorScheme.primary,
+                        ),
+                        icon: Icon(LucideIcons.trash2,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.primary),
                         label: Text(app.tr('message249')),
                         onPressed: () async {
                           final remove = await confirmSettingsAction(context,

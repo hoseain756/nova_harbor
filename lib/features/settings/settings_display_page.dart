@@ -257,11 +257,14 @@ class _PosterRadiusRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(NovaStrings.lookup(english, 'message451')),
+          Text(NovaStrings.lookup(english, 'message451'),
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(fontSize: 15, fontWeight: FontWeight.w500)),
           SizedBox(height: 3),
           Text(
             '${radius.round()} px',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontSize: 13,
                 color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           _RadiusSlider(
@@ -290,7 +293,11 @@ class _SelectRow extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: Theme.of(context).textTheme.titleSmall),
+        Text(title,
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall
+                ?.copyWith(fontSize: 15, fontWeight: FontWeight.w500)),
         const SizedBox(height: 4),
         SettingsLanguageDropdown(
             expanded: true,

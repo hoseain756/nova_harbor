@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/state/app_state.dart';
 import '../../core/auth/account_controller.dart';
 import '../../core/oauth/oauth_redirect.dart';
+import '../../core/theme/nova_theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../shared/widgets/noor_toast.dart';
 import 'widgets/settings_tiles.dart';
@@ -135,6 +136,29 @@ IconData _providerIcon(String service) => switch (service) {
       _ => LucideIcons.cloud
     };
 
+/// Netflix integration surface: graphite fill, 8dp corners, hairline edge.
+BoxDecoration _netflixSurface(BuildContext context) {
+  final theme = Theme.of(context);
+  final dark = theme.brightness == Brightness.dark;
+  return BoxDecoration(
+    color: dark ? NovaColors.graphite : theme.colorScheme.surface,
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(
+        color: dark ? NovaColors.divider : theme.colorScheme.outlineVariant),
+  );
+}
+
+/// Secondary CTA on the Netflix grey (#323232 dark).
+ButtonStyle _tonalSecondary(BuildContext context) {
+  final theme = Theme.of(context);
+  final dark = theme.brightness == Brightness.dark;
+  return FilledButton.styleFrom(
+    backgroundColor:
+        dark ? NovaColors.raised : theme.colorScheme.surfaceContainerHigh,
+    foregroundColor: dark ? NovaColors.white : theme.colorScheme.onSurface,
+  );
+}
+
 class _ServiceDestination extends StatelessWidget {
   const _ServiceDestination(
       {required this.service, required this.connected, this.subtitle});
@@ -157,7 +181,7 @@ class _ServiceDestination extends StatelessWidget {
                     : LucideIcons.chevronRight,
             size: 20,
             color: connected
-                ? Theme.of(context).colorScheme.secondary
+                ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.onSurfaceVariant),
         onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
             builder: (_) => _ServiceSettingsPage(service: service))));
@@ -674,11 +698,7 @@ class _TmdbKeyCardState extends State<_TmdbKeyCard> {
             ));
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
+      decoration: _netflixSurface(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -702,7 +722,7 @@ class _TmdbKeyCardState extends State<_TmdbKeyCard> {
               ),
               if (connected)
                 Icon(LucideIcons.circleCheck,
-                    color: Theme.of(context).colorScheme.secondary),
+                    color: Theme.of(context).colorScheme.primary),
             ],
           ),
           Material(
@@ -724,6 +744,9 @@ class _TmdbKeyCardState extends State<_TmdbKeyCard> {
             Align(
               alignment: AlignmentDirectional.centerEnd,
               child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                ),
                 onPressed: _busy ? null : _remove,
                 icon: Icon(LucideIcons.keyRound),
                 label: Text(NovaStrings.lookup(english, 'message291')),
@@ -751,7 +774,7 @@ class _TmdbKeyCardState extends State<_TmdbKeyCard> {
             SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
-              child: FilledButton.tonalIcon(
+              child: FilledButton.icon(
                 onPressed: _busy ? null : _save,
                 icon: _busy
                     ? SizedBox.square(
@@ -876,13 +899,16 @@ class _MdbListCardState extends State<_MdbListCard> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  FilledButton.tonalIcon(
+                  FilledButton.icon(
                     onPressed: _busy ? null : _save,
                     icon: const Icon(LucideIcons.shieldCheck),
                     label: Text(app.tr('mdblistSaveKey')),
                   ),
                   if (hasKey)
                     TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.primary,
+                      ),
                       onPressed: _busy ? null : _remove,
                       icon: const Icon(LucideIcons.keyRound),
                       label: Text(app.tr('mdblistRemoveKey')),
@@ -1330,11 +1356,7 @@ class _LinkedServiceCardState extends State<_LinkedServiceCard> {
     final waiting = _flow?['status'] == 'waiting';
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
+      decoration: _netflixSurface(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1356,7 +1378,7 @@ class _LinkedServiceCardState extends State<_LinkedServiceCard> {
               ),
               if (linked != null)
                 Icon(LucideIcons.circleCheck,
-                    color: Theme.of(context).colorScheme.secondary),
+                    color: Theme.of(context).colorScheme.primary),
             ],
           ),
           SizedBox(height: 14),
@@ -1435,6 +1457,7 @@ class _LinkedServiceCardState extends State<_LinkedServiceCard> {
               children: [
                 FilledButton.tonalIcon(
                   onPressed: _syncing ? null : _sync,
+                  style: _tonalSecondary(context),
                   icon: _syncing
                       ? SizedBox.square(
                           dimension: 16,
@@ -1444,6 +1467,9 @@ class _LinkedServiceCardState extends State<_LinkedServiceCard> {
                   label: Text(NovaStrings.lookup(english, 'message315')),
                 ),
                 TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                  ),
                   onPressed: _unlink,
                   icon: Icon(LucideIcons.unlink),
                   label: Text(NovaStrings.lookup(english, 'message308')),
@@ -1619,7 +1645,7 @@ class _LinkedServiceCardState extends State<_LinkedServiceCard> {
               _flow?['user_code']?.toString() ?? '',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.secondary,
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 4,
                   ),
@@ -1630,6 +1656,7 @@ class _LinkedServiceCardState extends State<_LinkedServiceCard> {
               runSpacing: 8,
               children: [
                 FilledButton.tonalIcon(
+                  style: _tonalSecondary(context),
                   onPressed: () async {
                     await Clipboard.setData(
                       ClipboardData(
@@ -1644,7 +1671,8 @@ class _LinkedServiceCardState extends State<_LinkedServiceCard> {
                   icon: Icon(LucideIcons.copy),
                   label: Text(NovaStrings.lookup(english, 'message329')),
                 ),
-                OutlinedButton.icon(
+                FilledButton.tonalIcon(
+                  style: _tonalSecondary(context),
                   onPressed: () => launchUrl(
                     Uri.parse(_flow?['verification_url']?.toString() ?? ''),
                     mode: LaunchMode.externalApplication,
@@ -1744,10 +1772,10 @@ class _ProfileStat extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondary.withValues(alpha: .09),
-          borderRadius: BorderRadius.circular(9),
-          border:
-              Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? NovaColors.raised
+              : Theme.of(context).colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1755,14 +1783,16 @@ class _ProfileStat extends StatelessWidget {
             Text(
               value,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.secondary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
             ),
             SizedBox(width: 5),
             Text(
               label,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
           ],
         ),
@@ -1844,11 +1874,7 @@ class _DebridCardState extends State<_DebridCard> {
                 ));
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
+      decoration: _netflixSurface(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1872,7 +1898,7 @@ class _DebridCardState extends State<_DebridCard> {
               ),
               if (connected)
                 Icon(LucideIcons.circleCheck,
-                    color: Theme.of(context).colorScheme.secondary),
+                    color: Theme.of(context).colorScheme.primary),
             ],
           ),
           SizedBox(height: 14),
@@ -1892,6 +1918,9 @@ class _DebridCardState extends State<_DebridCard> {
             Align(
               alignment: AlignmentDirectional.centerEnd,
               child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                ),
                 onPressed: _busy ? null : _remove,
                 icon: Icon(LucideIcons.unlink),
                 label: Text(NovaStrings.lookup(english, 'message291')),
@@ -1926,7 +1955,7 @@ class _DebridCardState extends State<_DebridCard> {
             SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
-              child: FilledButton.tonalIcon(
+              child: FilledButton.icon(
                 onPressed: _busy ? null : _save,
                 icon: _busy
                     ? SizedBox.square(
@@ -1948,15 +1977,26 @@ class _ServiceIcon extends StatelessWidget {
   final IconData icon;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondary.withValues(alpha: .11),
-          borderRadius: BorderRadius.circular(13),
+          color: dark ? NovaColors.netflixTile : Theme.of(context)
+              .colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+              color: dark
+                  ? NovaColors.divider
+                  : Theme.of(context).colorScheme.outlineVariant),
         ),
-        child: Icon(icon, color: Theme.of(context).colorScheme.secondary),
+        child: Icon(icon,
+            color: dark
+                ? NovaColors.white
+                : Theme.of(context).colorScheme.onSurface),
       );
+  }
 }
 
 String _serviceName(String? service) => switch (service) {

@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/storage/skip_timing_credentials.dart';
+import '../../../core/theme/nova_theme.dart';
 import '../../../l10n/nova_strings.dart';
 import '../../../shared/widgets/noor_toast.dart';
 import 'settings_tiles.dart';
@@ -106,15 +107,18 @@ class _SkipTimingServiceTileState extends State<SkipTimingServiceTile> {
       subtitle: subtitle,
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         if (hasKey) ...[
-          Icon(LucideIcons.circleCheck, size: 18, color: scheme.secondary),
+          const Icon(LucideIcons.circleCheck,
+              size: 18, color: NovaColors.success),
           const SizedBox(width: 8),
         ],
         Icon(
           Directionality.of(context) == TextDirection.rtl
               ? LucideIcons.chevronLeft
               : LucideIcons.chevronRight,
-          size: 20,
-          color: scheme.onSurfaceVariant,
+          size: 18,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? NovaColors.textDisabled
+              : scheme.onSurfaceVariant,
         ),
       ]),
       onTap: widget.onTap,
@@ -219,22 +223,30 @@ class _SkipTimingServiceCardState extends State<SkipTimingServiceCard> {
   Widget build(BuildContext context) {
     final strings = NovaStrings.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final provider = _provider;
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: scheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: scheme.outlineVariant),
+        color: dark ? NovaColors.graphite : scheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+            color: dark ? NovaColors.netflixLine : scheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(skipTimingServiceName(widget.service),
-              style: Theme.of(context).textTheme.titleMedium),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Text(strings.text(_descriptionKey(widget.service)),
-              style: Theme.of(context).textTheme.bodyMedium),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: dark
+                      ? NovaColors.mist
+                      : scheme.onSurfaceVariant)),
           const SizedBox(height: 12),
           Text(
             strings.text(provider == null
@@ -263,8 +275,10 @@ class _SkipTimingServiceCardState extends State<SkipTimingServiceCard> {
                             : 'skipTimingKeyNotSaved'),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: snapshot.data == true
-                          ? scheme.secondary
-                          : scheme.onSurfaceVariant,
+                          ? NovaColors.success
+                          : dark
+                              ? NovaColors.mist
+                              : scheme.onSurfaceVariant,
                     ),
               ),
             ),
@@ -297,7 +311,11 @@ class _SkipTimingServiceCardState extends State<SkipTimingServiceCard> {
                 builder: (context, snapshot) => snapshot.data == true
                     ? TextButton.icon(
                         onPressed: _busy ? null : _remove,
-                        icon: const Icon(LucideIcons.trash2),
+                        style: TextButton.styleFrom(
+                          foregroundColor:
+                              dark ? NovaColors.red : scheme.error,
+                        ),
+                        icon: const Icon(LucideIcons.trash2, size: 18),
                         label: Text(strings.text('skipTimingRemoveKey')),
                       )
                     : const SizedBox.shrink(),
@@ -310,7 +328,11 @@ class _SkipTimingServiceCardState extends State<SkipTimingServiceCard> {
               Uri.parse(_website(widget.service)),
               mode: LaunchMode.externalApplication,
             ),
-            icon: const Icon(LucideIcons.externalLink),
+            style: TextButton.styleFrom(
+              foregroundColor:
+                  dark ? NovaColors.mist : scheme.onSurfaceVariant,
+            ),
+            icon: const Icon(LucideIcons.externalLink, size: 16),
             label: Text(strings.text('skipTimingWebsite')),
           ),
         ],

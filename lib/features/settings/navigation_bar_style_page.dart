@@ -121,6 +121,7 @@ class _NavigationBarStyleOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
     return Semantics(
@@ -133,8 +134,7 @@ class _NavigationBarStyleOption extends StatelessWidget {
           duration: reduceMotion ? Duration.zero : NovaMotion.state,
           curve: NovaMotion.curve,
           decoration: BoxDecoration(
-            color: selected ? theme.colorScheme.secondaryContainer : null,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsetsDirectional.all(16),
           child: Row(
@@ -144,13 +144,21 @@ class _NavigationBarStyleOption extends StatelessWidget {
                 height: 44,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(14),
+                    color: dark
+                        ? NovaColors.netflixTile
+                        : theme.colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                        color: dark
+                            ? NovaColors.divider
+                            : theme.colorScheme.outlineVariant),
                   ),
                   child: Icon(
                     _icon,
                     size: 20,
-                    color: theme.colorScheme.secondary,
+                    color: dark
+                        ? NovaColors.white
+                        : theme.colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -159,11 +167,16 @@ class _NavigationBarStyleOption extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: theme.textTheme.titleSmall),
+                    Text(title,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w500,
+                            color: dark ? NovaColors.white : null)),
                     const SizedBox(height: 4),
                     Text(
                       description,
                       style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 13,
                           color: theme.colorScheme.onSurfaceVariant,
                           height: 1.45),
                     ),
@@ -171,13 +184,14 @@ class _NavigationBarStyleOption extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Icon(
-                selected ? LucideIcons.circleCheck : LucideIcons.circle,
-                size: 20,
-                color: selected
-                    ? theme.colorScheme.secondary
-                    : theme.colorScheme.onSurfaceVariant,
-              ),
+              if (selected)
+                Icon(
+                  LucideIcons.check,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                )
+              else
+                const SizedBox(width: 20),
             ],
           ),
         ),

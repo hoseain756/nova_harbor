@@ -68,7 +68,13 @@ class _NovaColorPickerState extends State<_NovaColorPicker> {
     final english = widget.english;
     final s = NovaStrings.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return AlertDialog(
+      backgroundColor: dark ? NovaColors.graphite : scheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: dark ? NovaColors.white : null),
       title: Text(widget.title ?? (NovaStrings.lookup(english, 'message724'))),
       content: SizedBox(
           width: 400,
@@ -81,7 +87,7 @@ class _NovaColorPickerState extends State<_NovaColorPicker> {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                         color: NovaColors.ink,
-                        borderRadius: BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.circular(8)),
                     child: widget.previewAsOutline
                         ? Stack(alignment: Alignment.center, children: [
                             Text(NovaStrings.lookup(english, 'message725'),
@@ -117,15 +123,19 @@ class _NovaColorPickerState extends State<_NovaColorPicker> {
                             message: _hexOf(color),
                             child: InkWell(
                                 onTap: () => _select(color),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 child: Container(
                                     width: 48,
                                     height: 48,
                                     decoration: BoxDecoration(
                                         color: color,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border:
-                                            Border.all(color: scheme.outline)),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                            color: color == _color
+                                                ? NovaColors.red
+                                                : scheme.outline,
+                                            width:
+                                                color == _color ? 2 : 1)),
                                     child: color == _color
                                         ? Icon(LucideIcons.check,
                                             color: color.computeLuminance() > .4
@@ -155,6 +165,11 @@ class _NovaColorPickerState extends State<_NovaColorPicker> {
               ]))),
       actions: [
         TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor:
+                  dark ? NovaColors.white : scheme.onSurface,
+              textStyle: const TextStyle(fontWeight: FontWeight.w600),
+            ),
             onPressed: () => Navigator.pop(context),
             child: Text(s.text('cancel'))),
         FilledButton(
