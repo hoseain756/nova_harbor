@@ -256,25 +256,29 @@ class _HomePageState extends State<HomePage> with NovaCatalogRefresh<HomePage> {
     final safeTop = MediaQuery.paddingOf(context).top;
     Widget buildHero(ValueListenable<double> contentVisibility) {
       if (classicHome) {
-        return Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(24, safeTop + 96, 24, 24),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Icon(LucideIcons.sparkles,
-                    size: 40, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(height: 24),
-                Text(NovaStrings.lookup(english, 'message104'),
-                    style: Theme.of(context).textTheme.headlineLarge),
-                const SizedBox(height: 12),
-                Text(NovaStrings.lookup(english, 'message105'),
-                    style: Theme.of(context).textTheme.bodyLarge),
-              ]),
+        return SizedBox(
+          height: 360,
+          child: Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(24, safeTop + 96, 24, 24),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(LucideIcons.sparkles,
+                      size: 40, color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(height: 24),
+                  Text(NovaStrings.lookup(english, 'message104'),
+                      style: Theme.of(context).textTheme.headlineLarge),
+                  const SizedBox(height: 12),
+                  Text(NovaStrings.lookup(english, 'message105'),
+                      style: Theme.of(context).textTheme.bodyLarge),
+                ]),
+          ),
         );
       }
-      // Netflix home: the NOVA wordmark floats above the featured card as
-      // the brand header (the glass search button stays top-end in the
+      // Netflix home: the hero now scrolls WITH the feed (in-page), so the
+      // NOVA wordmark is pinned above the whole page instead of living
+      // inside the hero stack (the glass search button stays top-end in the
       // shell, untouched).
       Widget heroHeader() => PositionedDirectional(
             start: 20,
@@ -283,24 +287,25 @@ class _HomePageState extends State<HomePage> with NovaCatalogRefresh<HomePage> {
               child: NovaBrand(width: 88, onDark: true),
             ),
           );
+      Widget heroBrandPin(Widget child) => classicHome
+          ? child
+          : Stack(children: [
+              Positioned.fill(child: child),
+              heroHeader(),
+            ]);
       return FutureBuilder<List<MediaItem>>(
         future: _featuredSlides,
         builder: (context, snapshot) {
           final featured = snapshot.data;
           if (featured != null && featured.isNotEmpty) {
-            return Stack(children: [
-              Positioned.fill(
-                child: FeaturedHero(
-                    items: featured,
-                    autoplayActive: widget.active,
-                    onTap: _open,
-                    contentVisibility: contentVisibility),
-              ),
-              heroHeader(),
-            ]);
+            return heroBrandPin(FeaturedHero(
+                items: featured,
+                autoplayActive: widget.active,
+                onTap: _open,
+                contentVisibility: contentVisibility));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const FeaturedSkeleton();
+            return heroBrandPin(const FeaturedSkeleton());
           }
           return Padding(
               padding: EdgeInsetsDirectional.fromSTEB(24, safeTop + 96, 24, 24),

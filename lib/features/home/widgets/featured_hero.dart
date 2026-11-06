@@ -14,12 +14,18 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../shared/widgets/image_decode.dart';
 
 const _heroSlideDuration = Duration(seconds: 6);
+const _heroSlideAnimation = Duration(milliseconds: 620);
 
-/// The featured hero carousel (home's top slot): full-bleed autoplaying
-/// artwork with TMDB-enriched logo / portrait / landscape picks, the bottom
-/// scrim ladder, metadata row, "View details" pill and page dots — plus the
-/// geometry-matched [FeaturedSkeleton] loading state. Moved verbatim from
-/// home_page.dart (Task 121-c); visuals, keys and ordering are unchanged.
+/// The hero carousel starts far from both ends so the feed can keep sliding
+/// FORWARD forever (Netflix loops its hero without ever sliding backwards).
+const _kHeroPageBase = 6000;
+
+/// The featured hero carousel (home's top slot): a full-bleed, edge-to-edge
+/// PageView whose artwork + title art + actions SLIDE together — exactly the
+/// Netflix home hero. It auto-advances every [_heroSlideDuration], pauses
+/// while touched, and shows the Netflix-style segmented progress bars.
+/// TMDB-enriched logo / portrait / landscape picks and the bottom scrim
+/// ladder are preserved.
 class FeaturedHero extends StatefulWidget {
   const FeaturedHero({
     super.key,
@@ -40,10 +46,11 @@ class FeaturedHero extends StatefulWidget {
 
 class _FeaturedCardState extends State<FeaturedHero>
     with WidgetsBindingObserver {
+  final PageController _pageController =
+      PageController(initialPage: _kHeroPageBase);
   Timer? _autoplayTimer;
   Timer? _touchResumeTimer;
   int _activeIndex = 0;
-  double _dragDistance = 0;
   bool _reducedMotion = false;
   bool _appActive = true;
   bool _touching = false;
@@ -73,6 +80,12 @@ class _FeaturedCardState extends State<FeaturedHero>
     if (_itemsSignature(oldWidget.items) != _itemsSignature(widget.items)) {
       _activeIndex = 0;
       _artworkSignature = null;
+      // Reset to the base page so the new feed starts from its first slide
+      // and keeps looping forward from there.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_pageController.hasClients) return;
+        _pageController.jumpToPage(_kHeroPageBase);
+      });
       _startAutoplay();
     }
     if (oldWidget.autoplayActive != widget.autoplayActive) _startAutoplay();
@@ -84,6 +97,7 @@ class _FeaturedCardState extends State<FeaturedHero>
     WidgetsBinding.instance.removeObserver(this);
     _autoplayTimer?.cancel();
     _touchResumeTimer?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -154,6 +168,10 @@ class _FeaturedCardState extends State<FeaturedHero>
     }
   }
 
+  int get _currentPage => _pageController.hasClients
+      ? _pageController.page!.round()
+      : _kHeroPageBase;
+
   void _startAutoplay() {
     _autoplayTimer?.cancel();
     if (_reducedMotion ||
@@ -165,7 +183,16 @@ class _FeaturedCardState extends State<FeaturedHero>
     }
     _autoplayTimer = Timer.periodic(_heroSlideDuration, (_) {
       if (!mounted || _touching || !_destinationVisible) return;
-      _setActiveSlide((_activeIndex + 1) % widget.items.length);
+      final target = _currentPage + 1;
+      if (_reducedMotion) {
+        _pageController.jumpToPage(target);
+      } else {
+        _pageController.animateToPage(
+          target,
+          duration: _heroSlideAnimation,
+          curve: Curves.easeInOutCubic,
+        );
+      }
     });
   }
 
@@ -192,12 +219,11 @@ class _FeaturedCardState extends State<FeaturedHero>
     });
   }
 
-  void _setActiveSlide(int targetIndex) {
-    if (!mounted || widget.items.length < 2) return;
-    final count = widget.items.length;
-    final target = ((targetIndex % count) + count) % count;
-    if (target == _activeIndex) return;
-    setState(() => _activeIndex = target);
+  void _onSlideChanged(int page) {
+    if (widget.items.isEmpty) return;
+    final realIndex = page % widget.items.length;
+    if (realIndex == _activeIndex) return;
+    setState(() => _activeIndex = realIndex);
     _precacheNext();
   }
 
@@ -219,126 +245,100 @@ class _FeaturedCardState extends State<FeaturedHero>
     }
   }
 
-  void _handleSwipeEnd() {
-    if (_dragDistance.abs() < 36 || widget.items.length < 2) return;
-    final forward = Directionality.of(context) == TextDirection.rtl
-        ? _dragDistance > 0
-        : _dragDistance < 0;
-    _setActiveSlide((_activeIndex + (forward ? 1 : -1)) % widget.items.length);
-    _dragDistance = 0;
-  }
-
   @override
   Widget build(BuildContext context) {
     final heroHeight = featuredHeroHeight(context);
-    final activeItem = widget.items[_activeIndex];
+    if (widget.items.isEmpty) {
+      return SizedBox(height: heroHeight, child: const SizedBox.expand());
+    }
     final wide = MediaQuery.sizeOf(context).width >= 700;
-    // Netflix reserves a band above the hero card for the floating brand
-    // header (title row + search), exactly like its home feed.
-    final topPadding = MediaQuery.paddingOf(context).top + 56;
-    final cardPadding = EdgeInsets.fromLTRB(
-      wide ? 32 : 20,
-      topPadding,
-      wide ? 32 : 20,
-      12,
-    );
+    final count = widget.items.length;
 
     return SizedBox(
       height: heroHeight,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Netflix page backdrop: the deep indigo-to-black ladder that sits
-          // behind the featured card (#202036 → #11111d → #07070c).
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF202036), Color(0xFF11111D), Color(0xFF07070C)],
-                stops: [0, .4, .8],
-              ),
-            ),
-          ),
-          Listener(
-            behavior: HitTestBehavior.translucent,
-            onPointerDown: (_) => _pauseForTouch(),
-            onPointerUp: (_) => _resumeAfterTouch(),
-            onPointerCancel: (_) => _resumeAfterTouch(),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onHorizontalDragStart: (_) => _dragDistance = 0,
-              onHorizontalDragUpdate: (details) =>
-                  _dragDistance += details.delta.dx,
-              onHorizontalDragEnd: (_) => _handleSwipeEnd(),
-              child: Padding(
-                padding: cardPadding,
-                child: Container(
-                  decoration: BoxDecoration(
-                    // Netflix featured card: 8dp corners + hairline white ring.
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: .20),
-                      width: .5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: .25),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      AnimatedSwitcher(
-                        duration: _reducedMotion
-                            ? Duration.zero
-                            : const Duration(milliseconds: 380),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeOutCubic,
-                        child: _FeaturedArtwork(
-                          key: ValueKey(activeItem.id),
-                          item: activeItem,
-                          artwork: _artwork[activeItem.id],
-                        ),
-                      ),
-                      const Positioned.fill(child: _FeaturedScrim()),
-                      Positioned.fill(
-                        child: ValueListenableBuilder<double>(
-                          valueListenable: widget.contentVisibility,
-                          child: _FeaturedOverlay(
-                            item: activeItem,
-                            artwork: _artwork[activeItem.id],
-                            onTap: () => widget.onTap(activeItem),
-                          ),
-                          builder: (context, visibility, child) => IgnorePointer(
-                            key: const ValueKey('home-hero-content-ignore-pointer'),
-                            ignoring: visibility <= .05,
-                            child: Opacity(
-                              key: const ValueKey('home-hero-content-opacity'),
-                              opacity: visibility,
-                              child: child,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+      child: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) => _pauseForTouch(),
+        onPointerUp: (_) => _resumeAfterTouch(),
+        onPointerCancel: (_) => _resumeAfterTouch(),
+        child: PageView.builder(
+          controller: _pageController,
+          onPageChanged: _onSlideChanged,
+          // Physical, page-by-page sliding — the Netflix hero motion.
+          physics: const PageScrollPhysics(),
+          allowImplicitScrolling: false,
+          itemBuilder: (context, absolutePage) {
+            final item = widget.items[absolutePage % count];
+            final artwork = _artwork[item.id];
+            return _FeaturedSlide(
+              item: item,
+              artwork: artwork,
+              slideTick: absolutePage,
+              wide: wide,
+              contentVisibility: widget.contentVisibility,
+              onTap: () => widget.onTap(item),
+            );
+          },
+        ),
       ),
     );
   }
 }
+
+/// One full-bleed hero page: artwork + scrim + title art + actions slide
+/// together as one unit (Netflix home hero behavior).
+class _FeaturedSlide extends StatelessWidget {
+  const _FeaturedSlide({
+    required this.item,
+    required this.artwork,
+    required this.slideTick,
+    required this.wide,
+    required this.contentVisibility,
+    required this.onTap,
+  });
+
+  final MediaItem item;
+  final FeaturedArtwork? artwork;
+  final int slideTick;
+  final bool wide;
+  final ValueListenable<double> contentVisibility;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _FeaturedArtwork(item: item, artwork: artwork),
+        const Positioned.fill(child: _FeaturedScrim()),
+        Positioned.fill(
+          child: ValueListenableBuilder<double>(
+            valueListenable: contentVisibility,
+            child: _FeaturedOverlay(
+              item: item,
+              artwork: artwork,
+              slideTick: slideTick,
+              wide: wide,
+              onTap: onTap,
+            ),
+            builder: (context, visibility, child) => IgnorePointer(
+              key: const ValueKey('home-hero-content-ignore-pointer'),
+              ignoring: visibility <= .05,
+              child: Opacity(
+                key: const ValueKey('home-hero-content-opacity'),
+                opacity: visibility,
+                child: child,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _FeaturedArtwork extends StatelessWidget {
-  const _FeaturedArtwork(
-      {super.key, required this.item, required this.artwork});
+  const _FeaturedArtwork({required this.item, required this.artwork});
   final MediaItem item;
   final FeaturedArtwork? artwork;
   @override
@@ -352,38 +352,23 @@ class _FeaturedArtwork extends StatelessWidget {
     return SizedBox.expand(
       child: url == null
           ? ColoredBox(color: scheme.surfaceContainerHighest)
-          : ClipRect(
-              child: TweenAnimationBuilder<double>(
-                tween: Tween<double>(
-                  begin: 1,
-                  end: MediaQuery.disableAnimationsOf(context) ? 1 : 1.05,
-                ),
-                duration: _heroSlideDuration,
-                curve: Curves.linear,
-                builder: (context, scale, child) => Transform.scale(
-                  scale: scale,
-                  child: child,
-                ),
-                child: NovaNetworkImage(
-                  url,
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                  cacheWidth: imageCacheWidth(context, size.width),
-                  alignment: Alignment.topCenter,
-                  excludeFromSemantics: true,
-                  frameBuilder: (context, child, frame, sync) =>
-                      AnimatedOpacity(
-                    opacity: frame == null ? 0 : 1,
-                    duration: MediaQuery.disableAnimationsOf(context)
-                        ? Duration.zero
-                        : const Duration(milliseconds: 320),
-                    child: child,
-                  ),
-                  errorBuilder: (_, __, ___) =>
-                      ColoredBox(color: scheme.surfaceContainerHighest),
-                ),
+          : NovaNetworkImage(
+              url,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              cacheWidth: imageCacheWidth(context, size.width),
+              alignment: Alignment.topCenter,
+              excludeFromSemantics: true,
+              frameBuilder: (context, child, frame, sync) => AnimatedOpacity(
+                opacity: frame == null ? 0 : 1,
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 320),
+                child: child,
               ),
+              errorBuilder: (_, __, ___) =>
+                  ColoredBox(color: scheme.surfaceContainerHighest),
             ),
     );
   }
@@ -398,15 +383,15 @@ class _FeaturedScrim extends StatelessWidget {
             gradient: LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      // Netflix featured card: a light top guard for the status icons plus
-      // the signature bottom scrim (transparent → black @ 80%).
+      // Netflix hero: a light top guard for the status icons plus the
+      // signature bottom scrim (transparent → black @ 82%).
       colors: [
-        Colors.black.withValues(alpha: .35),
+        Colors.black.withValues(alpha: .40),
         Colors.transparent,
         Colors.transparent,
-        Colors.black.withValues(alpha: .80),
+        Colors.black.withValues(alpha: .82),
       ],
-      stops: const [0, .28, .58, 1],
+      stops: const [0, .30, .55, 1],
     )));
   }
 }
@@ -415,11 +400,15 @@ class _FeaturedOverlay extends StatelessWidget {
   const _FeaturedOverlay({
     required this.item,
     required this.artwork,
+    required this.slideTick,
+    required this.wide,
     required this.onTap,
   });
 
   final MediaItem item;
   final FeaturedArtwork? artwork;
+  final int slideTick;
+  final bool wide;
   final VoidCallback onTap;
 
   @override
@@ -427,7 +416,6 @@ class _FeaturedOverlay extends StatelessWidget {
     final app = context.watch<AppState>();
     final english = app.english;
     final size = MediaQuery.sizeOf(context);
-    final wide = size.width >= 700;
     const foreground = Colors.white;
     final logo = artwork?.logo ?? item.logo;
     final displayTitle = artwork?.title ?? item.name;
@@ -436,9 +424,19 @@ class _FeaturedOverlay extends StatelessWidget {
         artwork?.genre ?? item.genres.firstOrNull!,
     ];
     final inMyList = app.contains(item);
+    // The hero state owns the rotation: this slide's own position and the
+    // currently-featured index drive the segmented progress bars.
+    final hero = context.findAncestorStateOfType<_FeaturedCardState>();
+    final heroItems = hero?.widget.items ?? const <MediaItem>[];
+    final slideCount = heroItems.length;
+    final ownIndex = slideCount == 0
+        ? 0
+        : heroItems.indexOf(item).clamp(0, slideCount - 1);
+    final activeIndex = hero?._activeIndex ?? 0;
 
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 16),
+      padding: EdgeInsetsDirectional.fromSTEB(
+          wide ? 32 : 20, 16, wide ? 32 : 20, 18),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
@@ -468,7 +466,7 @@ class _FeaturedOverlay extends StatelessWidget {
                       )
                     : _heroTitle(displayTitle, wide: wide, color: foreground),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               // Netflix category line: genres joined with the "•" separator.
               if (genres.isNotEmpty)
                 Padding(
@@ -484,7 +482,7 @@ class _FeaturedOverlay extends StatelessWidget {
                     ),
                   ),
                 ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               // Netflix action row: white Play + #333 My List, both flexed.
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -529,8 +527,7 @@ class _FeaturedOverlay extends StatelessWidget {
                         color: const Color(0xFF333333).withValues(alpha: .9),
                         borderRadius: BorderRadius.circular(4),
                         child: InkWell(
-                          onTap: () =>
-                              unawaited(app.toggleWatchlist(item)),
+                          onTap: () => unawaited(app.toggleWatchlist(item)),
                           borderRadius: BorderRadius.circular(4),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -570,6 +567,18 @@ class _FeaturedOverlay extends StatelessWidget {
                   ],
                 ),
               ),
+              // Netflix-style segmented progress: one thin bar per slide;
+              // watched slides fill solid, the active one fills over the
+              // slide duration, upcoming ones stay faint.
+              if (slideCount > 1) ...[
+                const SizedBox(height: 14),
+                _HeroProgressSegments(
+                  count: slideCount,
+                  activeIndex: activeIndex,
+                  ownIndex: ownIndex,
+                  slideTick: slideTick,
+                ),
+              ],
             ],
           ),
         ),
@@ -577,7 +586,8 @@ class _FeaturedOverlay extends StatelessWidget {
     );
   }
 
-  Widget _heroTitle(String title, {required bool wide, required Color color}) =>
+  Widget _heroTitle(String title,
+          {required bool wide, required Color color}) =>
       Text(
         title,
         maxLines: 2,
@@ -592,6 +602,119 @@ class _FeaturedOverlay extends StatelessWidget {
       );
 }
 
+/// Netflix-style segmented hero progress: each slide owns one 20×3 bar.
+class _HeroProgressSegments extends StatelessWidget {
+  const _HeroProgressSegments({
+    required this.count,
+    required this.activeIndex,
+    required this.ownIndex,
+    required this.slideTick,
+  });
+
+  final int count;
+  final int activeIndex;
+
+  /// This slide's own position — only the featured slide animates its bar.
+  final int ownIndex;
+  final int slideTick;
+
+  @override
+  Widget build(BuildContext context) {
+    final reducedMotion = MediaQuery.disableAnimationsOf(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < count && i < 8; i++)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.5),
+            child: _HeroSegment(
+              state: i == activeIndex && ownIndex == activeIndex
+                  ? _HeroSegmentState.active
+                  : i < activeIndex
+                      ? _HeroSegmentState.done
+                      : _HeroSegmentState.upcoming,
+              animate: i == activeIndex &&
+                  ownIndex == activeIndex &&
+                  !reducedMotion,
+              tick: slideTick,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+enum _HeroSegmentState { active, done, upcoming }
+
+class _HeroSegment extends StatelessWidget {
+  const _HeroSegment({
+    required this.state,
+    required this.animate,
+    required this.tick,
+  });
+
+  final _HeroSegmentState state;
+  final bool animate;
+
+  /// Changes every slide so the active segment's fill restarts cleanly.
+  final int tick;
+
+  @override
+  Widget build(BuildContext context) {
+    const track = Colors.white24;
+    const fill = Colors.white;
+    return switch (state) {
+      _HeroSegmentState.done => Container(
+          width: 20,
+          height: 3,
+          decoration: BoxDecoration(
+            color: fill.withValues(alpha: .9),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      _HeroSegmentState.upcoming => Container(
+          width: 20,
+          height: 3,
+          decoration: BoxDecoration(
+            color: track,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      _HeroSegmentState.active => Container(
+          width: 20,
+          height: 3,
+          alignment: AlignmentDirectional.centerStart,
+          decoration: BoxDecoration(
+            color: track,
+            borderRadius: BorderRadius.circular(2),
+          ),
+          child: animate
+              ? TweenAnimationBuilder<double>(
+                  key: ValueKey('hero-segment-$tick'),
+                  tween: Tween(begin: 0, end: 1),
+                  duration: _heroSlideDuration,
+                  curve: Curves.linear,
+                  builder: (context, value, _) => FractionallySizedBox(
+                    widthFactor: value.clamp(0.0, 1.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: fill,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    color: fill,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+        ),
+    };
+  }
+}
 
 class FeaturedSkeleton extends StatelessWidget {
   const FeaturedSkeleton({super.key});

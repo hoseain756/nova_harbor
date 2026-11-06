@@ -270,24 +270,6 @@ void main() {
                         ),
                         onClose: () {},
                       ),
-                      PlayerSideRail(
-                        side: AxisSide.left,
-                        topInset: 144,
-                        children: [
-                          PlayerRailButton(
-                            key: const ValueKey('lock'),
-                            icon: Icons.lock,
-                            semanticLabel: 'Lock controls',
-                            onTap: () {},
-                          ),
-                          PlayerSpeedPill(
-                            key: const ValueKey('speed'),
-                            label: '1.0X',
-                            semanticLabel: 'Playback speed',
-                            onTap: () => speedTaps++,
-                          ),
-                        ],
-                      ),
                       PlayerCenterTransport(
                         isPlaying: false,
                         backStepSec: 10,
@@ -324,6 +306,13 @@ void main() {
                         onScrubStart: () {},
                         onScrubUpdate: (_) {},
                         onScrubEnd: (_) {},
+                        // Netflix bottom-row controls (the former side rail
+                        // lives in the footer now).
+                        speedLabel: '1.0X',
+                        onOpenSpeed: () => speedTaps++,
+                        onLock: () {},
+                        hasEpisodes: true,
+                        onOpenEpisodes: () {},
                       ),
                     ],
                   ),
@@ -335,8 +324,6 @@ void main() {
 
         expect(tester.takeException(), isNull);
         final header = tester.getRect(find.byKey(const ValueKey('header')));
-        final lock = tester.getRect(find.byKey(const ValueKey('lock')));
-        final speed = tester.getRect(find.byKey(const ValueKey('speed')));
         final play = tester.getRect(
           find
               .descendant(
@@ -346,13 +333,14 @@ void main() {
               .at(1),
         );
         final footer = tester.getRect(find.byKey(const ValueKey('footer')));
-        expect(header.bottom, lessThanOrEqualTo(lock.top));
+        // Netflix anatomy: the header clears the center transport, and the
+        // bottom cluster stays fully on screen below the header.
         expect(header.bottom, lessThan(play.top));
-        expect(speed.bottom, lessThanOrEqualTo(footer.top));
-        expect(play.bottom, lessThan(footer.top));
-        expect(speed.height, greaterThanOrEqualTo(44));
-
-        await tester.tap(find.byKey(const ValueKey('speed')));
+        expect(footer.bottom, lessThanOrEqualTo(390));
+        expect(footer.top, greaterThanOrEqualTo(header.bottom));
+        // The single Netflix control row keeps every action reachable.
+        expect(find.text('1.0X'), findsOneWidget);
+        await tester.tap(find.text('1.0X'));
         expect(speedTaps, 1);
       },
     );

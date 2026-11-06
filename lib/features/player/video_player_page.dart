@@ -2251,6 +2251,13 @@ class _VideoPlayerPageState extends State<VideoPlayerPage>
           );
           if (mounted) _bumpControls();
         },
+        // Netflix bottom-row controls (speed / lock / episodes) replace the
+        // former left side rail entirely.
+        speedLabel: _speedLabel,
+        onOpenSpeed: _openSettingsPanel,
+        onLock: _lock,
+        hasEpisodes: widget.item.type == 'series',
+        onOpenEpisodes: _openEpisodesSheet,
       );
     }
 
@@ -2412,38 +2419,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage>
                               : null,
                           onClose: () => unawaited(_requestClose()),
                           wide: wide,
-                        ),
-                        PlayerSideRail(
-                          side: AxisSide.left,
-                          topInset: railTopInset,
-                          children: [
-                            // Keep episodes directly below the lock.
-                            PlayerRailButton(
-                              icon: LucideIcons.lockKeyhole,
-                              semanticLabel: NovaStrings.lookup(
-                                english,
-                                'playerLockControls',
-                              ),
-                              onTap: _lock,
-                            ),
-                            if (widget.item.type == 'series')
-                              PlayerRailButton(
-                                icon: LucideIcons.listVideo,
-                                semanticLabel: NovaStrings.lookup(
-                                  english,
-                                  'message43',
-                                ),
-                                onTap: _openEpisodesSheet,
-                              ),
-                            PlayerSpeedPill(
-                              label: _speedLabel,
-                              semanticLabel: NovaStrings.lookup(
-                                english,
-                                'playerPlaybackSpeed',
-                              ),
-                              onTap: _openSettingsPanel,
-                            ),
-                          ],
                         ),
                         // Task 139 (user mandate): the transport trio
                         // [rewind][play/pause][forward] lives in the MIDDLE

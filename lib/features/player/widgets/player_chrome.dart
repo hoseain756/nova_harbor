@@ -81,8 +81,9 @@ class PlayerTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Directional mirror (spec §0): RTL → title right / exit left;
-    // LTR → title left / exit right. START = title, END = exit.
+    // Netflix top bar: the back arrow leads (directional START), the title
+    // sits right next to it with the episode / stream line underneath in
+    // muted gray — plain text, no chips (Task: Netflix player UI/UX).
     return PositionedDirectional(
       top: 0,
       start: 0,
@@ -98,117 +99,85 @@ class PlayerTopBar extends StatelessWidget {
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(12, 6, wide ? 24 : 12, 26),
+            padding: EdgeInsetsDirectional.fromSTEB(6, 4, wide ? 20 : 10, 26),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                PlayerBackButton(onTap: onClose),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: NovaColors.white,
-                          fontSize: wide ? 16.5 : 14,
-                          fontWeight: FontWeight.w600,
-                          shadows: PlayerPalette.iconShadow,
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: NovaColors.white,
+                            fontSize: wide ? 17 : 15,
+                            fontWeight: FontWeight.w600,
+                            shadows: PlayerPalette.iconShadow,
+                          ),
                         ),
-                      ),
-                      if (episodeTag.isNotEmpty ||
-                          streamInfo?.isNotEmpty == true ||
-                          statusInfo != null)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(top: 5),
-                          child: Row(
-                            children: [
-                              if (episodeTag.isNotEmpty)
-                                Directionality(
-                                  // Mixed-script mandate: the tag is always LTR.
-                                  textDirection: TextDirection.ltr,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 7,
-                                      vertical: 1.5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          NovaColors.ink.withValues(alpha: .84),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(
-                                        color: NovaColors.white
-                                            .withValues(alpha: .24),
-                                      ),
-                                    ),
+                        if (episodeTag.isNotEmpty ||
+                            streamInfo?.isNotEmpty == true ||
+                            statusInfo != null)
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(top: 4),
+                            child: Row(
+                              children: [
+                                if (episodeTag.isNotEmpty)
+                                  Directionality(
+                                    // Mixed-script mandate: the tag is always LTR.
+                                    textDirection: TextDirection.ltr,
                                     child: Text(
                                       episodeTag,
                                       maxLines: 1,
                                       style: TextStyle(
-                                        color: NovaColors.white,
-                                        fontSize: wide ? 12 : 11,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: .8,
+                                        color: NovaColors.white
+                                            .withValues(alpha: .68),
+                                        fontSize: wide ? 12.5 : 11.5,
+                                        fontWeight: FontWeight.w500,
                                         fontFeatures: const [
                                           FontFeature.tabularFigures(),
                                         ],
+                                        shadows: PlayerPalette.iconShadow,
                                       ),
                                     ),
                                   ),
-                                ),
-                              if (episodeTag.isNotEmpty &&
-                                  (streamInfo?.isNotEmpty == true ||
-                                      statusInfo != null))
-                                const SizedBox(width: 6),
-                              if (streamInfo?.isNotEmpty == true)
-                                Flexible(
-                                  flex: statusInfo == null ? 1 : 2,
-                                  child: Semantics(
-                                    label:
-                                        streamInfoSemanticLabel ?? streamInfo,
-                                    excludeSemantics: true,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: NovaColors.ink
-                                            .withValues(alpha: .84),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: NovaColors.white
-                                              .withValues(alpha: .24),
-                                        ),
-                                      ),
+                                if (streamInfo?.isNotEmpty == true)
+                                  Flexible(
+                                    child: Semantics(
+                                      label:
+                                          streamInfoSemanticLabel ?? streamInfo,
+                                      excludeSemantics: true,
                                       child: Text(
                                         streamInfo!,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: NovaColors.white,
+                                        style: TextStyle(
+                                          color: NovaColors.white
+                                              .withValues(alpha: .62),
                                           fontSize: 11.5,
                                           height: 1.2,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.w500,
+                                          shadows: PlayerPalette.iconShadow,
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              if (streamInfo?.isNotEmpty == true &&
-                                  statusInfo != null)
-                                const SizedBox(width: 6),
-                              if (statusInfo != null)
-                                Flexible(flex: 3, child: statusInfo!),
-                            ],
+                                if (statusInfo != null)
+                                  Flexible(flex: 3, child: statusInfo!),
+                              ],
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                PlayerBackButton(onTap: onClose),
               ],
             ),
           ),
@@ -223,14 +192,23 @@ class PlayerBackButton extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => IconButton.filledTonal(
-        onPressed: onTap,
-        tooltip: MaterialLocalizations.of(context).closeButtonLabel,
-        style: IconButton.styleFrom(
-            minimumSize: const Size.square(48),
-            backgroundColor: NovaColors.ink.withValues(alpha: .72),
-            foregroundColor: NovaColors.white),
-        icon: const Icon(LucideIcons.x, size: 22),
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: MaterialLocalizations.of(context).closeButtonLabel,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: const SizedBox(
+            width: 46,
+            height: 46,
+            child: Icon(
+              LucideIcons.chevronLeft,
+              color: NovaColors.white,
+              size: 26,
+              shadows: PlayerPalette.iconShadow,
+            ),
+          ),
+        ),
       );
 }
 
@@ -299,7 +277,7 @@ class PlayerCenterTransport extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final big = wide ? 76.0 : 64.0;
+    final big = wide ? 78.0 : 66.0;
     final skipSize = (wide ? 54.0 : 48.0) * scale;
     return Positioned.fill(
       child: Center(
@@ -314,41 +292,32 @@ class PlayerCenterTransport extends StatelessWidget {
                 size: skipSize,
                 onTap: () => onSkip(-backStepSec),
               ),
-              SizedBox(width: 20 * scale),
+              SizedBox(width: 26 * scale),
+              // Netflix: the play/pause control is a large plain filled
+              // glyph — no enclosing circle or tinted disc.
               Semantics(
                 button: true,
                 label: NovaStrings.of(context)
                     .text(isPlaying ? 'playerPause' : 'message714'),
                 child: GestureDetector(
                   onTap: onPlayPause,
-                  child: Container(
-                    width: big,
-                    height: big,
-                    decoration: BoxDecoration(
-                      color: NovaColors.white.withValues(alpha: .14),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: NovaColors.white,
-                        width: 2.4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: NovaColors.ink.withValues(alpha: .38),
-                          blurRadius: 16,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
                     child: Icon(
                       isPlaying ? LucideIcons.pause : LucideIcons.play,
                       color: NovaColors.white,
-                      size: big * .5,
-                      shadows: PlayerPalette.iconShadow,
+                      size: big,
+                      shadows: const [
+                        Shadow(
+                            color: NovaColors.scrim,
+                            blurRadius: 14,
+                            offset: Offset(0, 2)),
+                      ],
                     ),
                   ),
                 ),
               ),
-              SizedBox(width: 20 * scale),
+              SizedBox(width: 26 * scale),
               _SkipButton(
                 forward: true,
                 seconds: forwardStepSec,
@@ -717,11 +686,10 @@ class _GradientTimelineState extends State<GradientTimeline> {
 
 // ── Bottom cluster ─────────────────────────────────────────────────────────
 
-/// Spec-exact bottom block (Task 124/125, trimmed by Task 139): progress row
-/// above ALL controls; fullscreen+volume at the directional END, source /
-/// subtitles / audio at the directional START. The [rewind][play][forward]
-/// trio moved to the MIDDLE OF THE SCREEN (PlayerCenterTransport — Task 139
-/// user mandate), so this row is slimmer and purely positional.
+/// Netflix bottom block: the red scrubber spans the full width, the elapsed /
+/// remaining times sit UNDERNEATH it at both ends, and the bottom control row
+/// carries episodes / subtitles / audio / source at the START with the speed,
+/// lock, volume and fullscreen group at the END (Task: Netflix player UI/UX).
 class PlayerBottomCluster extends StatelessWidget {
   const PlayerBottomCluster({
     super.key,
@@ -753,6 +721,11 @@ class PlayerBottomCluster extends StatelessWidget {
     this.readExactPositionMs,
     this.readExactDurationMs,
     this.interactionIdentity,
+    this.speedLabel,
+    this.onOpenSpeed,
+    this.onLock,
+    this.hasEpisodes = false,
+    this.onOpenEpisodes,
   });
 
   final int durationMs;
@@ -794,10 +767,19 @@ class PlayerBottomCluster extends StatelessWidget {
   final ValueChanged<double> onScrubUpdate;
   final ValueChanged<double> onScrubEnd;
 
+  /// Netflix bottom row additions (all optional so callers/tests that don't
+  /// need them keep compiling): speed "1x", control lock and the episodes
+  /// sheet live in the bottom control row instead of a side rail.
+  final String? speedLabel;
+  final VoidCallback? onOpenSpeed;
+  final VoidCallback? onLock;
+  final bool hasEpisodes;
+  final VoidCallback? onOpenEpisodes;
+
   @override
   Widget build(BuildContext context) {
     final controlSize = 48.0 * scale;
-    final margin = wide ? 28.0 : 14.0;
+    final margin = wide ? 28.0 : 16.0;
     final thickness = wide ? 6.0 : 4.0;
     return PositionedDirectional(
       start: 0,
@@ -818,14 +800,34 @@ class PlayerBottomCluster extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: Padding(
-            padding:
-                EdgeInsetsDirectional.fromSTEB(margin, 30, margin, 8 * scale),
+            padding: EdgeInsetsDirectional.fromSTEB(
+                margin, 26, margin, 6 * scale),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // 1) The scrubber owns the full width (Netflix anatomy).
                 // User-selected timeline convention: Arabic begins on the
                 // left, English on the right. Keep fill, thumb, labels and
                 // touch coordinates in the same direction.
+                Directionality(
+                  textDirection:
+                      english ? TextDirection.rtl : TextDirection.ltr,
+                  child: GradientTimeline(
+                    durationMs: durationMs,
+                    positionMs: positionMs,
+                    bufferedMs: bufferedMs,
+                    readExactPositionMs: readExactPositionMs,
+                    readExactDurationMs: readExactDurationMs,
+                    interactionIdentity: interactionIdentity,
+                    thickness: thickness,
+                    onScrubStart: onScrubStart,
+                    onScrubUpdate: onScrubUpdate,
+                    onScrubEnd: onScrubEnd,
+                  ),
+                ),
+                SizedBox(height: 2 * scale),
+                // 2) Times row beneath the bar: elapsed at one end,
+                // remaining/total at the other (tap toggles remaining).
                 Directionality(
                   textDirection:
                       english ? TextDirection.rtl : TextDirection.ltr,
@@ -838,20 +840,7 @@ class PlayerBottomCluster extends StatelessWidget {
                         wide: wide,
                         onTap: onToggleRemaining,
                       ),
-                      Expanded(
-                        child: GradientTimeline(
-                          durationMs: durationMs,
-                          positionMs: positionMs,
-                          bufferedMs: bufferedMs,
-                          readExactPositionMs: readExactPositionMs,
-                          readExactDurationMs: readExactDurationMs,
-                          interactionIdentity: interactionIdentity,
-                          thickness: thickness,
-                          onScrubStart: onScrubStart,
-                          onScrubUpdate: onScrubUpdate,
-                          onScrubEnd: onScrubEnd,
-                        ),
-                      ),
+                      const Spacer(),
                       _TimeLabel(
                         text: showRemaining && durationMs > 0
                             ? '-${formatPlayerTime(Duration(milliseconds: durationMs - positionMs))}'
@@ -863,27 +852,21 @@ class PlayerBottomCluster extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 2 * scale),
-                // Control row: side groups mirror with the direction; the
-                // transport trio lives center-screen (Task 139).
-                LayoutBuilder(builder: (context, constraints) {
-                  if (constraints.maxWidth < 600) {
-                    return Column(mainAxisSize: MainAxisSize.min, children: [
-                      SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: _trackGroup(controlSize)),
-                      const SizedBox(height: 4),
+                SizedBox(height: 6 * scale),
+                // 3) Control row — Netflix puts every bottom control in ONE
+                // row; narrow screens scroll it horizontally instead of
+                // stacking two rows.
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  child: Row(
+                    children: [
+                      _trackGroup(controlSize),
+                      const SizedBox(width: 8),
                       _mediaGroup(controlSize),
-                    ]);
-                  }
-                  return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _trackGroup(controlSize),
-                        _mediaGroup(controlSize)
-                      ]);
-                }),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -892,11 +875,30 @@ class PlayerBottomCluster extends StatelessWidget {
     );
   }
 
-  // END side: volume icon (tap = mute) + slider + fullscreen, with small
-  // labels underneath on tablets (spec §0-ب).
+  // END side: playback speed "1x" (plain Netflix text), control lock,
+  // volume icon (tap = mute) + slider, and fullscreen — with small labels
+  // underneath on tablets.
   Widget _mediaGroup(double controlSize) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (speedLabel != null && onOpenSpeed != null)
+            _SpeedTextControl(
+              label: speedLabel!,
+              semanticLabel: NovaStrings.lookup(english, 'playerPlaybackSpeed'),
+              scale: scale,
+              onTap: onOpenSpeed,
+            ),
+          if (onLock != null)
+            _RaillessControl(
+              icon: LucideIcons.lockKeyhole,
+              semanticLabel: NovaStrings.lookup(english, 'playerLockControls'),
+              label: wide
+                  ? (NovaStrings.lookup(english, 'playerLockControls'))
+                  : null,
+              scale: scale,
+              iconSize: 23,
+              onTap: onLock,
+            ),
           _RaillessControl(
             icon: muted
                 ? LucideIcons.volumeX
@@ -909,12 +911,15 @@ class PlayerBottomCluster extends StatelessWidget {
             scale: scale,
             onTap: onMuteToggle,
           ),
-          _VolumeSlider(
-            value: muted ? 0 : volume,
-            width: (wide ? 130 : 84) * scale,
-            onChanged: onVolumeChanged,
-            onChangeEnd: (_) => onVolumeDragEnd(),
-          ),
+          // Netflix phones rely on hardware volume — the persistent slider
+          // only joins the row on tablets.
+          if (wide)
+            _VolumeSlider(
+              value: muted ? 0 : volume,
+              width: 130 * scale,
+              onChanged: onVolumeChanged,
+              onChangeEnd: (_) => onVolumeDragEnd(),
+            ),
           _RaillessControl(
             icon: fullscreen ? LucideIcons.maximize : LucideIcons.minimize,
             semanticLabel: NovaStrings.lookup(
@@ -928,9 +933,9 @@ class PlayerBottomCluster extends StatelessWidget {
         ],
       );
 
-  // START side: source / subtitles / audio (+ prev & next episode for
-  // series), with small labels underneath on tablets. The pickers open the
-  // right-half side panel (Task 139) — always available.
+  // START side: episodes (series) / subtitles / audio / source (+ prev &
+  // next episode for series), with small labels underneath on tablets. The
+  // pickers open the right-half side panel (Task 139) — always available.
   Widget _trackGroup(double controlSize) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -943,13 +948,14 @@ class PlayerBottomCluster extends StatelessWidget {
               iconSize: 28,
               onTap: onPrev,
             ),
-          _RaillessControl(
-            icon: LucideIcons.arrowLeftRight,
-            semanticLabel: NovaStrings.lookup(english, 'playerChangeSource'),
-            label: wide ? (NovaStrings.lookup(english, 'message38')) : null,
-            scale: scale,
-            onTap: onOpenStreams,
-          ),
+          if (hasEpisodes && onOpenEpisodes != null)
+            _RaillessControl(
+              icon: LucideIcons.listVideo,
+              semanticLabel: NovaStrings.lookup(english, 'message43'),
+              label: wide ? (NovaStrings.lookup(english, 'message43')) : null,
+              scale: scale,
+              onTap: onOpenEpisodes,
+            ),
           _RaillessControl(
             icon: LucideIcons.captions,
             semanticLabel: NovaStrings.lookup(english, 'message7'),
@@ -964,6 +970,13 @@ class PlayerBottomCluster extends StatelessWidget {
             scale: scale,
             onTap: onOpenAudio,
           ),
+          _RaillessControl(
+            icon: LucideIcons.arrowLeftRight,
+            semanticLabel: NovaStrings.lookup(english, 'playerChangeSource'),
+            label: wide ? (NovaStrings.lookup(english, 'message38')) : null,
+            scale: scale,
+            onTap: onOpenStreams,
+          ),
           if (canNext)
             _RaillessControl(
               icon: LucideIcons.skipForward,
@@ -973,6 +986,48 @@ class PlayerBottomCluster extends StatelessWidget {
               onTap: onNext,
             ),
         ],
+      );
+}
+
+/// Netflix "1x" speed control: a bare tabular text button, no pill chrome.
+class _SpeedTextControl extends StatelessWidget {
+  const _SpeedTextControl({
+    required this.label,
+    required this.semanticLabel,
+    required this.scale,
+    required this.onTap,
+  });
+
+  final String label;
+  final String semanticLabel;
+  final double scale;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: semanticLabel,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onTap,
+          child: SizedBox(
+            width: 52 * scale,
+            height: 48 * scale,
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: NovaColors.white,
+                  fontSize: 14 * scale,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: .3,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  shadows: PlayerPalette.iconShadow,
+                ),
+              ),
+            ),
+          ),
+        ),
       );
 }
 

@@ -95,14 +95,9 @@ void main() {
     }
   }
 
-  testWidgets('hero remains stationary while content covers it',
-      (tester) async {
+  testWidgets('hero scrolls away with the page (in-page hero)', (tester) async {
     const marker = Key('hero-marker');
-    const layerStack = Key('cinematic-layer-stack');
-    const contentSurface = Key('cinematic-content-surface');
     const heroInfo = Key('hero-info');
-    const infoOpacity = Key('hero-info-opacity');
-    const infoIgnorePointer = Key('hero-info-ignore-pointer');
     var heroTaps = 0;
     var contentTaps = 0;
     tester.view.physicalSize = const Size(320, 800);
@@ -139,13 +134,8 @@ void main() {
                         ),
                       ),
                       builder: (context, value, child) => IgnorePointer(
-                        key: infoIgnorePointer,
                         ignoring: value <= .05,
-                        child: Opacity(
-                          key: infoOpacity,
-                          opacity: value,
-                          child: child,
-                        ),
+                        child: Opacity(opacity: value, child: child),
                       ),
                     ),
                   ),
@@ -169,39 +159,28 @@ void main() {
     );
     await tester.pump();
 
-    final stack = tester.widget<CinematicLayerStack>(find.byKey(layerStack));
-    expect(stack.children.first, isA<PositionedDirectional>(),
-        reason: 'The hero must be the bottom layer');
-    expect(stack.children.last, isA<CustomScrollView>(),
-        reason: 'The scroll view must paint above the hero');
-    final decorated =
-        tester.widget<DecoratedSliver>(find.byKey(contentSurface));
-    final coverDecoration = decorated.decoration as BoxDecoration;
-    expect(coverDecoration.color, Colors.blue,
-        reason: 'The cover surface must be fully opaque');
+    // Hero controls remain usable at scroll top.
     final beforeHero = tester.getTopLeft(find.byKey(marker));
     await tester.tapAt(const Offset(160, 340));
-    expect(heroTaps, 1, reason: 'Hero controls remain usable at scroll top');
+    expect(heroTaps, 1);
+
+    // THE MANDATE: the hero is part of the page — dragging scrolls it away.
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -160));
     await tester.pump();
     final offset = tester
         .state<ScrollableState>(find.byType(Scrollable).first)
         .position
         .pixels;
-    expect(
-        tester.getTopLeft(find.byKey(marker)).dy, closeTo(beforeHero.dy, .1));
     expect(offset, greaterThan(100));
-    expect(
-        tester.widget<Opacity>(find.byKey(infoOpacity)).opacity, lessThan(1));
+    expect(tester.getTopLeft(find.byKey(marker)).dy, lessThan(beforeHero.dy));
 
+    // Once the hero has fully scrolled past, it leaves the viewport and the
+    // content underneath receives taps.
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -500));
     await tester.pumpAndSettle();
-    expect(tester.widget<IgnorePointer>(find.byKey(infoIgnorePointer)).ignoring,
-        isTrue,
-        reason: 'Hero info must stop intercepting input once covered');
+    expect(find.byKey(marker), findsNothing);
     await tester.tapAt(const Offset(160, 100));
-    expect(contentTaps, 1,
-        reason: 'A visible content item receives taps above the hero');
+    expect(contentTaps, 1);
     expect(tester.takeException(), isNull);
   });
 

@@ -329,6 +329,16 @@ Future<void> _exercisePage(
   await _scrollToCoveredState(tester);
   discoveredImages.addAll(await _discoverVisibleImages(tester));
 
+  // The hero now lives INSIDE the scroll view (in-page hero mandate), so the
+  // PageStorage-backed scroll position must return to the top before the
+  // host is re-pumped — otherwise the re-pumped hero is already scrolled
+  // away and its content opacity key is not built.
+  tester
+      .state<ScrollableState>(find.byType(Scrollable).first)
+      .position
+      .jumpTo(0);
+  await _settleFrames(tester);
+
   await tester.pumpWidget(const SizedBox.shrink());
   await _settleFrames(tester);
   while (tester.takeException() != null) {}
@@ -339,11 +349,7 @@ Future<void> _exercisePage(
   expect(tester.takeException(), isNull);
   expect(Directionality.of(tester.element(find.byKey(_captureBoundary))),
       english ? TextDirection.ltr : TextDirection.rtl);
-  expect(tester.getSize(find.byType(CinematicLayerStack)), size);
-  expect(
-      find.byKey(const ValueKey('cinematic-content-surface'),
-          skipOffstage: false),
-      findsOneWidget);
+  expect(tester.getSize(find.byType(CinematicCoverScroll)), size);
   expect(tester.widget<Opacity>(find.byKey(heroOpacityKey)).opacity, 1);
 
   if (verifyBackPill) {
@@ -362,10 +368,12 @@ Future<void> _exercisePage(
 
   final position = await _scrollToCoveredState(tester);
   expect(position.pixels, greaterThan(300));
-  expect(tester.widget<Opacity>(find.byKey(heroOpacityKey)).opacity,
-      lessThanOrEqualTo(.05));
+  // In-page hero mandate: the hero moves WITH the page, so once the page is
+  // scrolled past it the hero has left the viewport entirely (its widgets
+  // are no longer built — a stronger guarantee than the old cover fade).
+  expect(find.byKey(heroOpacityKey), findsNothing);
   expect(tester.takeException(), isNull);
-  expect(tester.getSize(find.byType(CinematicLayerStack)), size);
+  expect(tester.getSize(find.byType(CinematicCoverScroll)), size);
 
   await _captureIfRequested(
       tester,
