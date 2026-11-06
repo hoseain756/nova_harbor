@@ -67,12 +67,17 @@ class ProfileAvatar extends StatelessWidget {
     this.url,
     this.size = 72,
     this.onImageStateChanged,
+    this.squared = false,
   });
 
   final String? packKey;
   final String? url;
   final double size;
   final ValueChanged<bool>? onImageStateChanged;
+
+  /// Netflix "Who's watching" avatars are rounded squares (6dp), while the
+  /// editor and tiles keep the classic circle.
+  final bool squared;
 
   void _reportImageState(bool loaded) {
     final callback = onImageStateChanged;
@@ -117,16 +122,18 @@ class ProfileAvatar extends StatelessWidget {
                     _fallback(context),
               )
             : _fallback(context);
-    return ClipOval(
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: ColoredBox(
-          color: scheme.primaryContainer,
-          child: image,
-        ),
+    final avatar = SizedBox(
+      width: size,
+      height: size,
+      child: ColoredBox(
+        color: scheme.primaryContainer,
+        child: image,
       ),
     );
+    return squared
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(6), child: avatar)
+        : ClipOval(child: avatar);
   }
 
   Widget _fallback(BuildContext context) => Icon(
@@ -619,60 +626,94 @@ class _ProfilePickerPageState extends State<ProfilePickerPage> {
   Widget build(BuildContext context) {
     final s = NovaStrings.of(context);
     final scheme = Theme.of(context).colorScheme;
+    // Netflix "Who's watching?" gate: a centered avatar grid on pure black
+    // with the muted manage-profiles affordance beneath it.
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(builder: (context, constraints) {
+          final tileWidth =
+              (constraints.maxWidth / 3.4).clamp(104.0, 160.0).toDouble();
           return Center(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(NovaSpace.gutter(constraints.maxWidth)),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 640),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SettingsPageIntro(
-                      title: s.text('profileWhoIsWatching'),
-                      description: s.text('profileChooseHint'),
-                    ),
-                    if (_failed) ...[
-                      Text(s.text('profileUnlockFailed'),
-                          style: TextStyle(color: scheme.error)),
-                      const SizedBox(height: NovaSpace.md),
-                    ],
-                    for (final profile in widget.profiles)
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(bottom: 8),
-                        child: SettingsTile(
-                          icon: LucideIcons.userRound,
-                          title: profile.name,
-                          subtitle: profile.isDefault
-                              ? s.text('profileDefault')
-                              : null,
-                          trailing:
-                              Row(mainAxisSize: MainAxisSize.min, children: [
-                            if (profile.hasPin)
-                              const Icon(LucideIcons.lockKeyhole, size: 18),
-                            const SizedBox(width: 12),
-                            ProfileAvatar(
-                              packKey: profile.avatarPackKey,
-                              url: profile.avatarUrl,
-                              size: 48,
-                            ),
-                          ]),
-                          onTap: _busy ? null : () => _select(profile),
-                        ),
+                    Text(
+                      s.text('profileWhoIsWatching'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
                       ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      s.text('profileChooseHint'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: .60),
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: NovaSpace.lg),
+                    if (_failed)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: NovaSpace.md),
+                        child: Text(s.text('profileUnlockFailed'),
+                            style: TextStyle(color: scheme.error)),
+                      ),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: NovaSpace.md,
+                      runSpacing: NovaSpace.lg,
+                      children: [
+                        for (final profile in widget.profiles)
+                          _ProfilePickerTile(
+                            profile: profile,
+                            width: tileWidth,
+                            english: s.english,
+                            busy: _busy,
+                            onSelect: () => _select(profile),
+                          ),
+                        if (widget.onManage != null)
+                          _ProfileAddTile(
+                            width: tileWidth * .86,
+                            english: s.english,
+                            busy: _busy,
+                            onManage: widget.onManage!,
+                          ),
+                      ],
+                    ),
                     if (widget.onManage != null) ...[
-                      const SizedBox(height: NovaSpace.md),
-                      OutlinedButton.icon(
+                      const SizedBox(height: NovaSpace.xl),
+                      TextButton.icon(
                         onPressed: _busy ? null : widget.onManage,
-                        icon: const Icon(LucideIcons.settings2),
-                        label: Text(s.text('profileManage')),
+                        icon: Icon(
+                          LucideIcons.pencil,
+                          size: 20,
+                          color: Colors.white.withValues(alpha: .73),
+                        ),
+                        label: Text(
+                          s.text('profileManage'),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: .73),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ],
                     if (_busy) ...[
-                      const SizedBox(height: NovaSpace.md),
-                      const LinearProgressIndicator(),
+                      const SizedBox(height: NovaSpace.lg),
+                      const SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 3, color: NovaColors.red),
+                      ),
                     ],
                   ],
                 ),
@@ -680,6 +721,146 @@ class _ProfilePickerPageState extends State<ProfilePickerPage> {
             ),
           );
         }),
+      ),
+    );
+  }
+}
+
+/// One avatar tile of the Netflix "Who's watching?" grid: rounded-square
+/// avatar, the #e5e5e5 name line and the PIN lock badge.
+class _ProfilePickerTile extends StatelessWidget {
+  const _ProfilePickerTile({
+    required this.profile,
+    required this.width,
+    required this.english,
+    required this.busy,
+    required this.onSelect,
+  });
+
+  final ProfileSummary profile;
+  final double width;
+  final bool english;
+  final bool busy;
+  final VoidCallback onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = NovaStrings.of(context);
+    return SizedBox(
+      width: width,
+      child: InkWell(
+        onTap: busy ? null : onSelect,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Column(
+            children: [
+              Stack(
+                children: [
+                  ProfileAvatar(
+                    packKey: profile.avatarPackKey,
+                    url: profile.avatarUrl,
+                    size: width * .8,
+                    squared: true,
+                  ),
+                  if (profile.hasPin)
+                    PositionedDirectional(
+                      end: 2,
+                      bottom: 2,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          LucideIcons.lockKeyhole,
+                          size: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                profile.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFFE5E5E5),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (profile.isDefault)
+                Text(
+                  s.text('profileDefault'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .45),
+                    fontSize: 11,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Netflix "Add Profile" tile: the 2dp #424242 ring with the big plus.
+class _ProfileAddTile extends StatelessWidget {
+  const _ProfileAddTile({
+    required this.width,
+    required this.english,
+    required this.busy,
+    required this.onManage,
+  });
+
+  final double width;
+  final bool english;
+  final bool busy;
+  final VoidCallback onManage;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = NovaStrings.of(context);
+    return SizedBox(
+      width: width,
+      child: InkWell(
+        onTap: busy ? null : onManage,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Column(
+            children: [
+              Container(
+                width: width * .8,
+                height: width * .8,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFF424242), width: 2),
+                ),
+                child: const Icon(LucideIcons.plus,
+                    size: 40, color: Colors.white),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                s.text('profileAdd'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFFE5E5E5),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

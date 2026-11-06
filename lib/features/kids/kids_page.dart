@@ -242,7 +242,7 @@ class _KidsPageState extends State<KidsPage> with NovaCatalogRefresh<KidsPage> {
                         itemCount: items.length,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: columns,
-                            mainAxisExtent: width / .72 +
+                            mainAxisExtent: width * 3 / 2 +
                                 86 * MediaQuery.textScalerOf(context).scale(1),
                             crossAxisSpacing: 20,
                             mainAxisSpacing: 24),

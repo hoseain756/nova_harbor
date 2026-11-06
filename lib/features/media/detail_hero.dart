@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/models/media_item.dart';
 import '../../shared/widgets/image_decode.dart';
+import '../../shared/widgets/nova_brand.dart';
 import '../../shared/widgets/shimmer_box.dart';
 export '../../shared/widgets/shimmer_box.dart';
 
@@ -111,6 +112,28 @@ class DetailHero extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Netflix detail tag: the N symbol followed by the letter-
+                // spaced FILM / SERIES type line.
+                Row(children: [
+                  const NovaBrand(symbolOnly: true, width: 18, onDark: true),
+                  const SizedBox(width: 6),
+                  Text(
+                    item.type == 'movie'
+                        ? (Directionality.of(context) == TextDirection.rtl
+                            ? 'فيلم'
+                            : 'FILM')
+                        : (Directionality.of(context) == TextDirection.rtl
+                            ? 'مسلسل'
+                            : 'SERIES'),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .81),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 2.5,
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 8),
                 if (logoUrl?.isNotEmpty == true)
                   NovaNetworkImage(logoUrl!,
                       height: isWide ? 112 : 80,
@@ -174,16 +197,12 @@ class HarborPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    // Netflix meta chip: flat #333 block with 4dp corners.
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: .75),
-        borderRadius: BorderRadius.circular(HarborRadii.pill),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: .5),
-          width: 1,
-        ),
+        color: NovaColors.raised.withValues(alpha: .9),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: child,
     );
@@ -321,6 +340,8 @@ class DetailActionRow extends StatelessWidget {
           runSpacing: 12,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
+            // Netflix detail actions: white 4dp-corner Play plus #333
+            // secondary buttons, icon circles for the overflow actions.
             FilledButton.icon(
                 onPressed: loading ? null : onPrimaryPressed,
                 icon: loading
@@ -336,20 +357,24 @@ class DetailActionRow extends StatelessWidget {
                 style: FilledButton.styleFrom(
                     backgroundColor: NovaColors.white,
                     foregroundColor: NovaColors.ink,
-                    shape: const StadiumBorder(),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4)),
                     elevation: 3,
                     shadowColor: Colors.black.withValues(alpha: .4),
                     minimumSize: const Size(176, 52))),
-            OutlinedButton.icon(
+            FilledButton.icon(
                 onPressed: onToggleWatchlist,
                 icon: Icon(inList ? LucideIcons.check : LucideIcons.plus,
                     size: 20),
                 label: Text(inList
                     ? (NovaStrings.lookup(english, 'message137'))
-                    : (NovaStrings.lookup(english, 'message138'))),
-                style: OutlinedButton.styleFrom(
-                    shape: const StadiumBorder(),
-                    side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+                    : (NovaStrings.lookup(english, 'netflixMyList'))),
+                style: FilledButton.styleFrom(
+                    backgroundColor: NovaColors.raised,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4)),
+                    elevation: 0,
                     minimumSize: const Size(112, 52))),
             if (!nativeTopActions)
               IconButton.outlined(
@@ -359,12 +384,17 @@ class DetailActionRow extends StatelessWidget {
                   style:
                       IconButton.styleFrom(minimumSize: const Size.square(52))),
             if (onDownload != null)
-              IconButton.outlined(
+              FilledButton.icon(
                   onPressed: onDownload,
-                  tooltip: NovaStrings.lookup(english, 'message140'),
-                  icon: const Icon(LucideIcons.download),
-                  style:
-                      IconButton.styleFrom(minimumSize: const Size.square(52))),
+                  icon: const Icon(LucideIcons.download, size: 20),
+                  label: Text(NovaStrings.lookup(english, 'downloads')),
+                  style: FilledButton.styleFrom(
+                      backgroundColor: NovaColors.raised,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4)),
+                      elevation: 0,
+                      minimumSize: const Size(112, 52))),
             if (!nativeTopActions)
               PopupMenuButton<String>(
                 tooltip: NovaStrings.lookup(english, 'message141'),

@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../core/models/media_item.dart';
 import '../../core/state/app_state.dart';
 import '../../core/theme/horse_theme.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../core/torrent/torrent_models.dart';
 import '../../core/torrent/torrent_service.dart';
 import '../../shared/widgets/image_decode.dart';
@@ -116,29 +117,29 @@ class _LibraryPageState extends State<LibraryPage> {
                 child: TextField(
                     onChanged: (value) =>
                         setState(() => _query = value.trim().toLowerCase()),
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
                     decoration: InputDecoration(
+                        // Netflix search field: flat #323232 block, 4dp
+                        // corners.
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: .6),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        fillColor: NovaColors.raised,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 14),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(999),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: .5),
-                          ),
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: BorderSide.none,
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(999),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: .5),
-                          ),
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: BorderSide.none,
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(999),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: const BorderSide(
+                              color: Colors.white, width: 1),
                         ),
-                        prefixIcon: const Icon(LucideIcons.search, size: 20),
+                        prefixIcon: const Icon(LucideIcons.search,
+                            size: 20, color: NovaColors.textDisabled),
                         hintText: app.tr('message643'))))),
       if (_tab == 0) ...[
         if (watchlist.isEmpty)
@@ -163,7 +164,7 @@ class _LibraryPageState extends State<LibraryPage> {
                     itemCount: watchlist.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: columns,
-                        mainAxisExtent: width / .72 +
+                        mainAxisExtent: width * 3 / 2 +
                             78 * MediaQuery.textScalerOf(context).scale(1),
                         crossAxisSpacing: 20,
                         mainAxisSpacing: 24),

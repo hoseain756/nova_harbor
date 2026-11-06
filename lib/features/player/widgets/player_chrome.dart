@@ -21,8 +21,8 @@ import 'player_blur_action_pill.dart';
 /// Mirroring follows the inherited Directionality (Arabic RTL / English LTR).
 class PlayerPalette {
   static const Color gradientStart = NovaColors.red;
-  static const Color gradientEnd = NovaColors.redSoft;
-  static const Color thumb = NovaColors.redSoft;
+  static const Color gradientEnd = NovaColors.red;
+  static const Color thumb = NovaColors.white;
 
   static const List<Shadow> iconShadow = [
     Shadow(color: NovaColors.scrim, blurRadius: 6, offset: Offset(0, 1)),

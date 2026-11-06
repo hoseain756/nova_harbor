@@ -49,8 +49,9 @@ class MediaRail extends StatelessWidget {
     );
     final showRelease =
         showTitle && items.any((item) => item.releaseInfo != null);
-    final posterWidth = wide ? 138.0 : 122.0;
-    final posterHeight = posterWidth / .72;
+    // Netflix rails: 120dp posters at the exact 2:3 card ratio.
+    final posterWidth = wide ? 138.0 : 120.0;
+    final posterHeight = posterWidth * 3 / 2;
     final titleStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w600,
           height: 1.3,
@@ -86,7 +87,12 @@ class MediaRail extends StatelessWidget {
                 child: subtitle == null
                     ? Text(
                         title,
-                        style: Theme.of(context).textTheme.titleLarge,
+                        // Netflix section title: 18pt bold white.
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                                fontSize: 18, fontWeight: FontWeight.w700),
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +100,12 @@ class MediaRail extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: Theme.of(context).textTheme.titleLarge,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700),
                           ),
                           const SizedBox(height: 1),
                           Text(
@@ -121,7 +132,7 @@ class MediaRail extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             itemCount: items.length,
             separatorBuilder: (_, __) => SizedBox(
-              width: (viewportWidth * .035).clamp(12.0, 18.0).toDouble(),
+              width: (viewportWidth * .035).clamp(10.0, 14.0).toDouble(),
             ),
             itemBuilder: (context, index) {
               final item = items[index];

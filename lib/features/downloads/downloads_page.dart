@@ -8,6 +8,7 @@ import '../../core/models/media_item.dart';
 import '../../l10n/nova_strings.dart';
 import '../../shared/widgets/app_state_message.dart';
 import '../../shared/widgets/noor_toast.dart';
+import '../catalog/catalog_browser_page.dart';
 import '../player/playback_entry_page.dart';
 import 'downloads_view.dart';
 
@@ -130,6 +131,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
                     unawaited(_action(() => _manager.cancel(job))),
                 onRetry: (job) => unawaited(_action(() => _manager.retry(job))),
                 onRemove: (job) => unawaited(_remove(job)),
+                onBrowse: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                      builder: (_) => const CatalogBrowserPage()),
+                ),
               );
             },
           ),

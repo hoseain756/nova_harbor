@@ -14,6 +14,7 @@ import '../../core/theme/horse_theme.dart';
 import '../../core/data/content_classifier.dart';
 import '../../shared/widgets/media_rail.dart';
 import '../../shared/widgets/noor_toast.dart';
+import '../../shared/widgets/nova_brand.dart';
 import '../shell/noor_dock_tabs.dart';
 import 'widgets/async_media_section.dart';
 import 'widgets/continue_watching_rail.dart';
@@ -272,16 +273,31 @@ class _HomePageState extends State<HomePage> with NovaCatalogRefresh<HomePage> {
               ]),
         );
       }
+      // Netflix home: the NOVA wordmark floats above the featured card as
+      // the brand header (the glass search button stays top-end in the
+      // shell, untouched).
+      Widget heroHeader() => PositionedDirectional(
+            start: 20,
+            top: safeTop + 10,
+            child: IgnorePointer(
+              child: NovaBrand(width: 88, onDark: true),
+            ),
+          );
       return FutureBuilder<List<MediaItem>>(
         future: _featuredSlides,
         builder: (context, snapshot) {
           final featured = snapshot.data;
           if (featured != null && featured.isNotEmpty) {
-            return FeaturedHero(
-                items: featured,
-                autoplayActive: widget.active,
-                onTap: _open,
-                contentVisibility: contentVisibility);
+            return Stack(children: [
+              Positioned.fill(
+                child: FeaturedHero(
+                    items: featured,
+                    autoplayActive: widget.active,
+                    onTap: _open,
+                    contentVisibility: contentVisibility),
+              ),
+              heroHeader(),
+            ]);
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const FeaturedSkeleton();
@@ -301,25 +317,39 @@ class _HomePageState extends State<HomePage> with NovaCatalogRefresh<HomePage> {
       heroBuilder: buildHero,
       heroHeight: classicHome ? 360 : featuredHeroHeight(context),
       slivers: [
+        // Netflix category chips (TV Shows / Movies / Categories style):
+        // transparent pills with the 30% white ring.
         SliverToBoxAdapter(
             child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(24, 24, 24, 32),
-          child: Wrap(spacing: 8, runSpacing: 8, children: [
-            ActionChip(
-                avatar: const Icon(LucideIcons.film, size: 18),
-                label: Text(NovaStrings.lookup(english, 'message106')),
-                onPressed: () => _openSection(
-                    const CatalogBrowserPage(initialType: 'movie'))),
-            ActionChip(
-                avatar: const Icon(LucideIcons.tv, size: 18),
-                label: Text(NovaStrings.lookup(english, 'message107')),
-                onPressed: () => _openSection(
-                    const CatalogBrowserPage(initialType: 'series'))),
-            ActionChip(
-                avatar: const Icon(LucideIcons.sparkles, size: 18),
-                label: Text(NovaStrings.lookup(english, 'message108')),
-                onPressed: () => _openSection(const AnimePage())),
-          ]),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 20, 16, 28),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            child: Row(
+              children: [
+                _NetflixHeaderChip(
+                  icon: LucideIcons.film,
+                  label: NovaStrings.lookup(english, 'message106'),
+                  onTap: () => _openSection(
+                      const CatalogBrowserPage(initialType: 'movie')),
+                ),
+                const SizedBox(width: 12),
+                _NetflixHeaderChip(
+                  icon: LucideIcons.tv,
+                  label: NovaStrings.lookup(english, 'message107'),
+                  onTap: () => _openSection(
+                      const CatalogBrowserPage(initialType: 'series')),
+                ),
+                const SizedBox(width: 12),
+                _NetflixHeaderChip(
+                  icon: LucideIcons.sparkles,
+                  label: NovaStrings.lookup(english, 'message108'),
+                  chevron: true,
+                  onTap: () => _openSection(const AnimePage()),
+                ),
+              ],
+            ),
+          ),
         )),
         if (app.continueWatching.isNotEmpty ||
             app.linkedContinueWatching.isNotEmpty)
@@ -698,4 +728,58 @@ class _ServiceMessage extends StatelessWidget {
           ),
         ),
       );
+}
+
+/// Netflix header chip: a 34dp transparent pill with the 30% white ring,
+/// icon + 14/600 label, optionally trailing the dropdown chevron.
+class _NetflixHeaderChip extends StatelessWidget {
+  const _NetflixHeaderChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.chevron = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool chevron;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      shape: StadiumBorder(
+        side: BorderSide(color: Colors.white.withValues(alpha: .30)),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const StadiumBorder(),
+        child: Container(
+          height: 34,
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 12, 0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: Colors.white),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (chevron) ...[
+                const SizedBox(width: 4),
+                const Icon(LucideIcons.chevronDown,
+                    size: 16, color: Colors.white),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

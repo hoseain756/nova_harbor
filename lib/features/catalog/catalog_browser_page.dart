@@ -312,7 +312,7 @@ class _CatalogBrowserPageState extends State<CatalogBrowserPage>
                         itemCount: items.length,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: columns,
-                            mainAxisExtent: width / .72 +
+                            mainAxisExtent: width * 3 / 2 +
                                 78 * MediaQuery.textScalerOf(context).scale(1),
                             crossAxisSpacing: 20,
                             mainAxisSpacing: 24),

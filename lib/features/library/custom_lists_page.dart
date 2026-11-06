@@ -209,7 +209,7 @@ class CustomListDetailPage extends StatelessWidget {
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: columns,
-                                      mainAxisExtent: width / .72 +
+                                      mainAxisExtent: width * 3 / 2 +
                                           78 *
                                               MediaQuery.textScalerOf(context)
                                                   .scale(1),

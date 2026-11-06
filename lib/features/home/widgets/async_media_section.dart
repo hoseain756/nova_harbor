@@ -106,7 +106,7 @@ class RailLoadingSkeleton extends StatelessWidget {
     );
     final width = MediaQuery.sizeOf(context).width;
     final posterWidth = width >= 700 ? 138.0 : 122.0;
-    final posterHeight = posterWidth / .72;
+    final posterHeight = posterWidth * 3 / 2;
     final labelHeight = showTitle
         ? 8 + MediaQuery.textScalerOf(context).scale(14) * 1.3 * 2
         : 0.0;

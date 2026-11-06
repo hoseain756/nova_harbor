@@ -320,71 +320,71 @@ class _EpisodeTile extends StatelessWidget {
     final title =
         (episode.video['name'] ?? episode.video['title'] ?? episodeLabel)
             .toString();
-    final app = context.read<AppState>();
     final theme = Theme.of(context);
     final time = MaterialLocalizations.of(context).formatTimeOfDay(
         TimeOfDay.fromDateTime(episode.released),
         alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
+    // Netflix "Coming Soon" card: hairline-bordered 8dp card with a 16:9
+    // preview on top and the episode info beneath it.
     return Padding(
-        padding: const EdgeInsetsDirectional.only(bottom: 16),
+        padding: const EdgeInsetsDirectional.only(bottom: 24),
         child: Material(
-            color: theme.colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(20),
+            color: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side:
+                  BorderSide(color: Colors.white.withValues(alpha: .21)),
+            ),
+            clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(20),
-              child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: LayoutBuilder(builder: (context, constraints) {
-                    final wide = constraints.maxWidth >= 500;
-                    final art = ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: SizedBox(
-                            width: wide ? 160 : 88,
-                            height: wide ? 96 : 112,
-                            child: still == null
-                                ? ColoredBox(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: still == null
+                            ? ColoredBox(
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
+                                child: const Icon(LucideIcons.tv))
+                            : NovaNetworkImage(still,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                cacheWidth: imageCacheWidth(context, 640),
+                                errorBuilder: (_, __, ___) => ColoredBox(
                                     color: theme
                                         .colorScheme.surfaceContainerHighest,
-                                    child: const Icon(LucideIcons.tv))
-                                : NovaNetworkImage(still,
-                                    fit: BoxFit.cover,
-                                    cacheWidth: imageCacheWidth(
-                                        context, wide ? 160 : 88),
-                                    errorBuilder: (_, __, ___) => ColoredBox(
-                                        color: theme.colorScheme
-                                            .surfaceContainerHighest,
-                                        child: const Icon(LucideIcons.tv)))));
-                    return Row(children: [
-                      art,
-                      const SizedBox(width: 16),
-                      Expanded(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                            Text(time,
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                    color: theme.colorScheme.secondary)),
-                            const SizedBox(height: 6),
-                            Text(episode.series.name,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleMedium),
-                            const SizedBox(height: 6),
-                            Text('$episodeLabel · $title',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodySmall),
-                            const SizedBox(height: 6),
-                            Text(app.tr('message575'),
-                                style: theme.textTheme.labelMedium),
-                          ])),
-                      if (wide) ...[
-                        const SizedBox(width: 16),
-                        const Icon(LucideIcons.play, size: 24)
-                      ],
-                    ]);
-                  })),
+                                    child: const Icon(LucideIcons.tv)))),
+                    Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            12, 12, 12, 16),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(time,
+                                  style: TextStyle(
+                                      color: Colors.white.withValues(alpha: .83),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 8),
+                              Text(episode.series.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700)),
+                              const SizedBox(height: 6),
+                              Text('$episodeLabel \u00b7 $title',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      color: Colors.white.withValues(alpha: .60),
+                                      fontSize: 14,
+                                      height: 1.4)),
+                            ])),
+                  ]),
             )));
   }
 }

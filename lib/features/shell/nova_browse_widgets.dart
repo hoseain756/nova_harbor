@@ -144,7 +144,7 @@ class NovaBrowseFeature extends StatelessWidget {
           aspectRatio: 16 / 9,
           child: Material(
             color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(8),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onOpen,

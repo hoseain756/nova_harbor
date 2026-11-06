@@ -73,7 +73,7 @@ class _PosterCardContent extends StatelessWidget {
             app.webSettings['showCardBadges'] != false,
       ),
     );
-    final ratio = MediaQuery.sizeOf(context).width >= 700 ? 0.72 : 0.72;
+    final ratio = 2 / 3; // Netflix poster card: exact 2:3.
     return SizedBox(
       width: width,
       child: Semantics(

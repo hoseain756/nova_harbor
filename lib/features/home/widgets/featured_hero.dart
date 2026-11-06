@@ -1,4 +1,3 @@
-import '../../../core/theme/nova_theme.dart';
 import 'package:nova_mobile/l10n/nova_strings.dart';
 import 'package:nova_mobile/shared/widgets/nova_network_image.dart';
 import 'dart:async';
@@ -193,12 +192,6 @@ class _FeaturedCardState extends State<FeaturedHero>
     });
   }
 
-  void _goToSlide(int targetIndex) {
-    _pauseForTouch();
-    _resumeAfterTouch();
-    _setActiveSlide(targetIndex);
-  }
-
   void _setActiveSlide(int targetIndex) {
     if (!mounted || widget.items.length < 2) return;
     final count = widget.items.length;
@@ -240,89 +233,105 @@ class _FeaturedCardState extends State<FeaturedHero>
     final heroHeight = featuredHeroHeight(context);
     final activeItem = widget.items[_activeIndex];
     final wide = MediaQuery.sizeOf(context).width >= 700;
-    final topPadding = MediaQuery.paddingOf(context).top + 8;
+    // Netflix reserves a band above the hero card for the floating brand
+    // header (title row + search), exactly like its home feed.
+    final topPadding = MediaQuery.paddingOf(context).top + 56;
     final cardPadding = EdgeInsets.fromLTRB(
-      wide ? 32 : 16,
+      wide ? 32 : 20,
       topPadding,
-      wide ? 32 : 16,
+      wide ? 32 : 20,
       12,
     );
 
     return SizedBox(
       height: heroHeight,
-      child: Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerDown: (_) => _pauseForTouch(),
-        onPointerUp: (_) => _resumeAfterTouch(),
-        onPointerCancel: (_) => _resumeAfterTouch(),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onHorizontalDragStart: (_) => _dragDistance = 0,
-          onHorizontalDragUpdate: (details) =>
-              _dragDistance += details.delta.dx,
-          onHorizontalDragEnd: (_) => _handleSwipeEnd(),
-          child: Padding(
-            padding: cardPadding,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(HarborRadii.xxl),
-                border: Border.all(
-                  color: NovaColors.harborEdgeSoft,
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: .5),
-                    blurRadius: 28,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  AnimatedSwitcher(
-                    duration: _reducedMotion
-                        ? Duration.zero
-                        : const Duration(milliseconds: 380),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeOutCubic,
-                    child: _FeaturedArtwork(
-                      key: ValueKey(activeItem.id),
-                      item: activeItem,
-                      artwork: _artwork[activeItem.id],
-                    ),
-                  ),
-                  const Positioned.fill(child: _FeaturedScrim()),
-                  Positioned.fill(
-                    child: ValueListenableBuilder<double>(
-                      valueListenable: widget.contentVisibility,
-                      child: _FeaturedOverlay(
-                        item: activeItem,
-                        artwork: _artwork[activeItem.id],
-                        itemsCount: widget.items.length,
-                        activeIndex: _activeIndex,
-                        reduceMotion: _reducedMotion,
-                        onSelectPage: _goToSlide,
-                        onTap: () => widget.onTap(activeItem),
-                      ),
-                      builder: (context, visibility, child) => IgnorePointer(
-                        key: const ValueKey('home-hero-content-ignore-pointer'),
-                        ignoring: visibility <= .05,
-                        child: Opacity(
-                          key: const ValueKey('home-hero-content-opacity'),
-                          opacity: visibility,
-                          child: child,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Netflix page backdrop: the deep indigo-to-black ladder that sits
+          // behind the featured card (#202036 → #11111d → #07070c).
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF202036), Color(0xFF11111D), Color(0xFF07070C)],
+                stops: [0, .4, .8],
               ),
             ),
           ),
-        ),
+          Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (_) => _pauseForTouch(),
+            onPointerUp: (_) => _resumeAfterTouch(),
+            onPointerCancel: (_) => _resumeAfterTouch(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragStart: (_) => _dragDistance = 0,
+              onHorizontalDragUpdate: (details) =>
+                  _dragDistance += details.delta.dx,
+              onHorizontalDragEnd: (_) => _handleSwipeEnd(),
+              child: Padding(
+                padding: cardPadding,
+                child: Container(
+                  decoration: BoxDecoration(
+                    // Netflix featured card: 8dp corners + hairline white ring.
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: .20),
+                      width: .5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: .25),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      AnimatedSwitcher(
+                        duration: _reducedMotion
+                            ? Duration.zero
+                            : const Duration(milliseconds: 380),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeOutCubic,
+                        child: _FeaturedArtwork(
+                          key: ValueKey(activeItem.id),
+                          item: activeItem,
+                          artwork: _artwork[activeItem.id],
+                        ),
+                      ),
+                      const Positioned.fill(child: _FeaturedScrim()),
+                      Positioned.fill(
+                        child: ValueListenableBuilder<double>(
+                          valueListenable: widget.contentVisibility,
+                          child: _FeaturedOverlay(
+                            item: activeItem,
+                            artwork: _artwork[activeItem.id],
+                            onTap: () => widget.onTap(activeItem),
+                          ),
+                          builder: (context, visibility, child) => IgnorePointer(
+                            key: const ValueKey('home-hero-content-ignore-pointer'),
+                            ignoring: visibility <= .05,
+                            child: Opacity(
+                              key: const ValueKey('home-hero-content-opacity'),
+                              opacity: visibility,
+                              child: child,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -384,19 +393,20 @@ class _FeaturedScrim extends StatelessWidget {
   const _FeaturedScrim();
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return DecoratedBox(
         decoration: BoxDecoration(
             gradient: LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
+      // Netflix featured card: a light top guard for the status icons plus
+      // the signature bottom scrim (transparent → black @ 80%).
       colors: [
-        scheme.scrim.withValues(alpha: .25),
-        scheme.scrim.withValues(alpha: .05),
-        scheme.scrim.withValues(alpha: .86),
-        scheme.scrim
+        Colors.black.withValues(alpha: .35),
+        Colors.transparent,
+        Colors.transparent,
+        Colors.black.withValues(alpha: .80),
       ],
-      stops: const [0, .35, .78, 1],
+      stops: const [0, .28, .58, 1],
     )));
   }
 }
@@ -405,19 +415,11 @@ class _FeaturedOverlay extends StatelessWidget {
   const _FeaturedOverlay({
     required this.item,
     required this.artwork,
-    required this.itemsCount,
-    required this.activeIndex,
-    required this.reduceMotion,
-    required this.onSelectPage,
     required this.onTap,
   });
 
   final MediaItem item;
   final FeaturedArtwork? artwork;
-  final int itemsCount;
-  final int activeIndex;
-  final bool reduceMotion;
-  final ValueChanged<int> onSelectPage;
   final VoidCallback onTap;
 
   @override
@@ -429,250 +431,167 @@ class _FeaturedOverlay extends StatelessWidget {
     const foreground = Colors.white;
     final logo = artwork?.logo ?? item.logo;
     final displayTitle = artwork?.title ?? item.name;
-    final genre = artwork?.genre ?? item.genres.firstOrNull;
-    final type = item.type == 'movie'
-        ? (english ? 'Movies' : 'الأفلام')
-        : (english ? 'Series' : 'المسلسلات');
+    final genres = [
+      if ((artwork?.genre ?? item.genres.firstOrNull)?.isNotEmpty == true)
+        artwork?.genre ?? item.genres.firstOrNull!,
+    ];
+    final inMyList = app.contains(item);
 
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(
-        wide ? 28 : 16,
-        16,
-        wide ? 28 : 16,
-        14,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Harbor Floating Trending Pill Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: .50),
-              borderRadius: BorderRadius.circular(HarborRadii.sm),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: .15),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 16),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Netflix title art: the TMDB logo centered above the meta line
+              // (250×80 box, exactly like the featured card), with the plain
+              // title as the fallback so slides always carry a label.
+              GestureDetector(
+                onTap: onTap,
+                child: logo != null
+                    ? NovaNetworkImage(
+                        logo,
+                        width: math.min(size.width * .7, 250),
+                        height: wide ? 88 : 72,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.bottomCenter,
+                        cacheWidth: imageCacheWidth(context, 250),
+                        semanticLabel: displayTitle,
+                        errorBuilder: (_, __, ___) => _heroTitle(
+                          displayTitle,
+                          wide: wide,
+                          color: foreground,
+                        ),
+                      )
+                    : _heroTitle(displayTitle, wide: wide, color: foreground),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  LucideIcons.trendingUp,
-                  size: 13,
-                  color: NovaColors.harborAccent,
-                ),
-                const SizedBox(width: 6),
-                Flexible(
+              const SizedBox(height: 16),
+              // Netflix category line: genres joined with the "•" separator.
+              if (genres.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    english
-                        ? '#${activeIndex + 1} in $type Today'
-                        : '#${activeIndex + 1} في $type اليوم',
+                    genres.join(' \u2022 '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: foreground.withValues(alpha: .98),
+                      fontSize: 14,
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (logo != null)
-            NovaNetworkImage(
-              logo,
-              width: math.min(size.width * .65, 320),
-              height: wide ? 88 : 72,
-              fit: BoxFit.contain,
-              alignment: AlignmentDirectional.centerStart
-                  .resolve(Directionality.of(context)),
-              cacheWidth: imageCacheWidth(context, 320),
-              semanticLabel: displayTitle,
-              errorBuilder: (_, __, ___) => Text(
-                displayTitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: foreground,
-                  fontSize: wide ? 36 : 28,
-                  fontWeight: FontWeight.w800,
-                  height: 1.15,
-                ),
-              ),
-            )
-          else
-            Text(
-              displayTitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: foreground,
-                fontSize: wide ? 36 : 28,
-                fontWeight: FontWeight.w800,
-                height: 1.15,
-              ),
-            ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 12,
-            runSpacing: 4,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              if (item.releaseInfo?.isNotEmpty == true)
-                Text(
-                  item.releaseInfo!,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
-              if (item.rating?.isNotEmpty == true)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5C518).withValues(alpha: .15),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: const Color(0xFFF5C518).withValues(alpha: .5),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(LucideIcons.star,
-                          size: 12, color: Color(0xFFF5C518)),
-                      const SizedBox(width: 4),
-                      Text(
-                        item.rating!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
+              const SizedBox(height: 16),
+              // Netflix action row: white Play + #333 My List, both flexed.
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                        child: InkWell(
+                          onTap: onTap,
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(LucideIcons.play,
+                                    size: 22, color: Colors.black),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    NovaStrings.lookup(english, 'message131'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              if (genre != null)
-                Text(
-                  genre,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .75),
-                    fontSize: 13,
-                  ),
-                ),
-            ],
-          ),
-          if (wide &&
-              (artwork?.overview ?? item.description)?.isNotEmpty == true) ...[
-            const SizedBox(height: 10),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: Text(
-                artwork?.overview ?? item.description!,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: foreground.withValues(alpha: .85),
-                  height: 1.5,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 18),
-          Wrap(
-            spacing: 12,
-            runSpacing: 10,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              // Main Harbor Play button
-              FilledButton.icon(
-                onPressed: onTap,
-                icon: const Icon(LucideIcons.play, size: 19),
-                label: Text(NovaStrings.lookup(english, 'message131')),
-                style: FilledButton.styleFrom(
-                  backgroundColor: NovaColors.white,
-                  foregroundColor: NovaColors.ink,
-                  shape: const StadiumBorder(),
-                  elevation: 4,
-                  shadowColor: Colors.black.withValues(alpha: .5),
-                  minimumSize: const Size(120, 48),
-                ),
-              ),
-              // Watchlist button
-              IconButton(
-                onPressed: () => unawaited(app.toggleWatchlist(item)),
-                tooltip: app.contains(item)
-                    ? (NovaStrings.lookup(english, 'message132'))
-                    : (NovaStrings.lookup(english, 'message133')),
-                icon: Icon(
-                  app.contains(item)
-                      ? LucideIcons.check
-                      : LucideIcons.plus,
-                  color: app.contains(item)
-                      ? NovaColors.harborAccent
-                      : Colors.white,
-                  size: 20,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withValues(alpha: .38),
-                  side: BorderSide(
-                    color: Colors.white.withValues(alpha: .24),
-                  ),
-                  minimumSize: const Size.square(48),
-                ),
-              ),
-              // More Info button
-              IconButton(
-                onPressed: onTap,
-                tooltip: NovaStrings.lookup(english, 'message101'),
-                icon: const Icon(LucideIcons.info, color: Colors.white, size: 20),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withValues(alpha: .38),
-                  side: BorderSide(
-                    color: Colors.white.withValues(alpha: .24),
-                  ),
-                  minimumSize: const Size.square(48),
-                ),
-              ),
-            ],
-          ),
-          if (itemsCount > 1) ...[
-            const SizedBox(height: 14),
-            // Harbor horizontal indicator dots
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (int i = 0; i < itemsCount; i++)
-                  GestureDetector(
-                    onTap: () => onSelectPage(i),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      height: 6,
-                      width: i == activeIndex ? 22 : 6,
-                      decoration: BoxDecoration(
-                        color: i == activeIndex
-                            ? NovaColors.harborAccent
-                            : Colors.white.withValues(alpha: .24),
-                        borderRadius: BorderRadius.circular(3),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Material(
+                        color: const Color(0xFF333333).withValues(alpha: .9),
+                        borderRadius: BorderRadius.circular(4),
+                        child: InkWell(
+                          onTap: () =>
+                              unawaited(app.toggleWatchlist(item)),
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  inMyList
+                                      ? LucideIcons.check
+                                      : LucideIcons.plus,
+                                  size: 22,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    inMyList
+                                        ? NovaStrings.lookup(
+                                            english, 'message132')
+                                        : NovaStrings.lookup(
+                                            english, 'netflixMyList'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ],
-        ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
+
+  Widget _heroTitle(String title, {required bool wide, required Color color}) =>
+      Text(
+        title,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color,
+          fontSize: wide ? 36 : 28,
+          fontWeight: FontWeight.w800,
+          height: 1.15,
+        ),
+      );
 }
+
 
 class FeaturedSkeleton extends StatelessWidget {
   const FeaturedSkeleton({super.key});

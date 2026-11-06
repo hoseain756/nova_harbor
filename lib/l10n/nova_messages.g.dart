@@ -1386,6 +1386,8 @@ const Map<String, String> novaEnglish = {
   "sharedCollectionInviteJoined": "You joined the shared collection.",
   "sharedCollectionInviteInvalid": "This invite is invalid or no longer active.",
   "sharedCollectionInvitePending": "Could not join yet. Your invite is saved; reopen the app to retry.",
+  "netflixMyList": "My List",
+  "searchTopResults": "Top Results",
 };
 const Map<String, String> novaArabic = {
   "appName": "NOVA",
@@ -2774,4 +2776,6 @@ const Map<String, String> novaArabic = {
   "sharedCollectionInviteJoined": "انضممت إلى المجموعة المشتركة.",
   "sharedCollectionInviteInvalid": "هذه الدعوة غير صالحة أو لم تعد نشطة.",
   "sharedCollectionInvitePending": "تعذّر الانضمام الآن. حُفظت الدعوة؛ أعِد فتح التطبيق للمحاولة مجددًا.",
+  "netflixMyList": "قائمتي",
+  "searchTopResults": "أهم النتائج",
 };

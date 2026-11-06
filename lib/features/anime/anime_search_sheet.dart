@@ -256,7 +256,7 @@ class _AnimeSearchSheetState extends State<_AnimeSearchSheet> {
                                   gridDelegate:
                                       SliverGridDelegateWithFixedCrossAxisCount(
                                           crossAxisCount: columns,
-                                          mainAxisExtent: width / .72 +
+                                          mainAxisExtent: width * 3 / 2 +
                                               78 *
                                                   MediaQuery.textScalerOf(
                                                           context)

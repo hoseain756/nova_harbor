@@ -1385,5 +1385,7 @@
   "sharedItemAlreadyAdded": "This title is already in the collection.",
   "sharedCollectionInviteJoined": "You joined the shared collection.",
   "sharedCollectionInviteInvalid": "This invite is invalid or no longer active.",
-  "sharedCollectionInvitePending": "Could not join yet. Your invite is saved; reopen the app to retry."
+  "sharedCollectionInvitePending": "Could not join yet. Your invite is saved; reopen the app to retry.",
+  "netflixMyList": "My List",
+  "searchTopResults": "Top Results"
 }

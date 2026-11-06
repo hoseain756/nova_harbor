@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
 
 /// Only colours supplied in the NOVA identity, including its companion palette.
+///
+/// Netflix UI port: the dark canvas is pure black (#000), cards sit on
+/// #161616, controls use the #323232 Netflix grey, and the accent is the
+/// Netflix red (#E50914) with white foregrounds. Light mode keeps the NOVA
+/// neutrals with a deepened Netflix red for AA contrast.
 abstract final class NovaColors {
-  // Harbor Cool-Grey Signature Palette with warm amber accent (oklch(0.78 0.13 60))
-  static const red = Color(0xFFF4A25C);
-  static const redDeep = Color(0xFFC87A38);
-  static const redSoft = Color(0xFFF8BE8E);
+  // Netflix signature palette.
+  static const red = Color(0xFFE50914);
+  static const redDeep = Color(0xFFB00710);
+  static const redSoft = Color(0xFFE5E5E5);
+  static const netflixBlue = Color(0xFF0071EB);
+  static const netflixTile = Color(0xFF1A1A1A);
+  static const netflixLine = Color(0xFF222222);
   static const blush = Color(0xFF2C241E);
-  static const ink = Color(0xFF111213);
+  static const ink = Color(0xFF000000);
   static const oledBlack = Color(0xFF000000);
-  static const graphite = Color(0xFF191B1C);
-  static const surfaceHigh = Color(0xFF252628);
-  static const raised = Color(0xFF323335);
-  static const divider = Color(0xFF3C3D3F);
-  static const edgeSoft = Color(0x403C3D3F);
+  static const graphite = Color(0xFF161616);
+  static const surfaceHigh = Color(0xFF262626);
+  static const raised = Color(0xFF323232);
+  static const divider = Color(0xFF2E2E2E);
+  static const edgeSoft = Color(0x33FFFFFF);
   static const white = Color(0xFFFFFFFF);
-  static const mist = Color(0xFFA8ABAD);
-  static const textDisabled = Color(0xFF626365);
+  static const mist = Color(0xFFA0A0A0);
+  static const textDisabled = Color(0xFF6B6B6B);
   static const success = Color(0xFF45B164);
   static const warning = Color(0xFFF5C451);
   static const info = Color(0xFF4C8DE0);
@@ -26,9 +34,9 @@ abstract final class NovaColors {
   static const lightSurface = Color(0xFFFFFFFF);
   static const lightText = Color(0xFF111213);
   static const lightTextSecondary = Color(0xFF52555A);
-  static const lightAccent = Color(0xFF944700);
+  static const lightAccent = Color(0xFFC11119);
   static const lightDivider = Color(0xFFDCDFE2);
-  static const scrim = Color(0xBF111213);
+  static const scrim = Color(0xBF000000);
 
   // Harbor semantic tokens
   static const harborCanvas = ink;
@@ -102,7 +110,8 @@ abstract final class NovaTheme {
     final scheme = ColorScheme(
       brightness: brightness,
       primary: dark ? NovaColors.red : NovaColors.lightAccent,
-      onPrimary: dark ? NovaColors.ink : NovaColors.white,
+      // Netflix buttons: white text on the red fill in both modes.
+      onPrimary: NovaColors.white,
       primaryContainer: dark ? NovaColors.white : NovaColors.ink,
       onPrimaryContainer: dark ? NovaColors.ink : NovaColors.white,
       secondary: accent,
@@ -163,13 +172,15 @@ abstract final class NovaTheme {
       labelMedium: type(12, FontWeight.w500, height: 1.3),
       labelSmall: type(11, FontWeight.w500, height: 1.3),
     );
-    final shape =
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
+    // Netflix component geometry: 4dp control corners, 8dp cards.
+    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(8));
+    final buttonShape =
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(4));
     final button = ButtonStyle(
       minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
       padding: const WidgetStatePropertyAll(
           EdgeInsets.symmetric(horizontal: 24, vertical: 14)),
-      shape: WidgetStatePropertyAll(shape),
+      shape: WidgetStatePropertyAll(buttonShape),
       textStyle: WidgetStatePropertyAll(textTheme.labelLarge),
       overlayColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.pressed)
@@ -178,8 +189,9 @@ abstract final class NovaTheme {
                   ? accent.withValues(alpha: .18)
                   : null),
     );
+    // Netflix inputs: flat 4dp corners on the #323232 grey.
     final border = OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         borderSide: BorderSide(color: scheme.outline));
     return ThemeData(
       useMaterial3: true,
@@ -247,13 +259,22 @@ abstract final class NovaTheme {
           errorBorder:
               border.copyWith(borderSide: BorderSide(color: scheme.error)),
           errorMaxLines: 3),
+      // Netflix filter chips: transparent fill, 30% white ring, solid
+      // white (dark) / ink (light) active pill with inverted label.
       chipTheme: ChipThemeData(
           shape: const StadiumBorder(),
-          backgroundColor: scheme.surfaceContainerHigh,
-          selectedColor: scheme.primaryContainer,
-          side: BorderSide(color: scheme.outlineVariant),
-          labelStyle: textTheme.labelLarge,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+          backgroundColor: Colors.transparent,
+          selectedColor: dark ? NovaColors.white : NovaColors.ink,
+          side: BorderSide(
+              color: dark
+                  ? Colors.white.withValues(alpha: .30)
+                  : NovaColors.ink.withValues(alpha: .30)),
+          labelStyle: WidgetStateTextStyle.resolveWith((states) => TextStyle(
+                color: states.contains(WidgetState.selected)
+                    ? (dark ? NovaColors.ink : NovaColors.white)
+                    : text,
+              )),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
       tabBarTheme: TabBarThemeData(
           labelColor: accent,
           unselectedLabelColor: muted,
@@ -285,7 +306,7 @@ abstract final class NovaTheme {
           backgroundColor: scheme.surface,
           surfaceTintColor: Colors.transparent,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           titleTextStyle: textTheme.titleLarge,
           contentTextStyle: textTheme.bodyMedium),
       bottomSheetTheme: BottomSheetThemeData(
@@ -297,7 +318,7 @@ abstract final class NovaTheme {
           modalBarrierColor: scheme.scrim.withValues(alpha: .72),
           shape: const RoundedRectangleBorder(
               borderRadius:
-                  BorderRadiusDirectional.vertical(top: Radius.circular(24)))),
+                  BorderRadiusDirectional.vertical(top: Radius.circular(20)))),
       listTileTheme: ListTileThemeData(
           contentPadding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
           minVerticalPadding: 12,

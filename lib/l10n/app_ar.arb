@@ -1385,5 +1385,7 @@
   "sharedItemAlreadyAdded": "هذا العنوان موجود في المجموعة بالفعل.",
   "sharedCollectionInviteJoined": "انضممت إلى المجموعة المشتركة.",
   "sharedCollectionInviteInvalid": "هذه الدعوة غير صالحة أو لم تعد نشطة.",
-  "sharedCollectionInvitePending": "تعذّر الانضمام الآن. حُفظت الدعوة؛ أعِد فتح التطبيق للمحاولة مجددًا."
+  "sharedCollectionInvitePending": "تعذّر الانضمام الآن. حُفظت الدعوة؛ أعِد فتح التطبيق للمحاولة مجددًا.",
+  "netflixMyList": "قائمتي",
+  "searchTopResults": "أهم النتائج"
 }

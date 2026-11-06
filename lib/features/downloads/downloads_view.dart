@@ -4,7 +4,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/downloads/download_manager.dart';
 import '../../core/theme/nova_theme.dart';
 import '../../l10n/nova_strings.dart';
-import '../../shared/widgets/app_state_message.dart';
 import '../../shared/widgets/image_decode.dart';
 import '../../shared/widgets/nova_network_image.dart';
 
@@ -19,6 +18,7 @@ class DownloadsView extends StatelessWidget {
     required this.onRetry,
     required this.onRemove,
     this.storageError,
+    this.onBrowse,
   });
 
   final List<NovaDownload> jobs;
@@ -27,6 +27,10 @@ class DownloadsView extends StatelessWidget {
   final ValueChanged<NovaDownload> onCancel;
   final ValueChanged<NovaDownload> onRetry;
   final ValueChanged<NovaDownload> onRemove;
+
+  /// Netflix-style empty-state call to action ("browse what you can
+  /// download"). When null the CTA is omitted.
+  final VoidCallback? onBrowse;
 
   @override
   Widget build(BuildContext context) {
@@ -105,10 +109,9 @@ class DownloadsView extends StatelessWidget {
           if (jobs.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
-              child: AppStateMessage(
-                icon: LucideIcons.download,
-                message:
-                    '${s.text('downloadsEmpty')}\n${s.text('downloadsEmptyBody')}',
+              child: _NetflixDownloadsEmpty(
+                english: NovaStrings.of(context).english,
+                onBrowse: onBrowse,
               ),
             )
           else
@@ -423,3 +426,83 @@ String _size(int bytes) => bytes < 1
     : bytes >= 1073741824
         ? '${(bytes / 1073741824).toStringAsFixed(1)} GB'
         : '${(bytes / 1048576).toStringAsFixed(1)} MB';
+
+/// Netflix downloads empty state: the 120dp #1a1a1a circle with the big
+/// arrow, the bold headline, muted body copy and the white 4dp-corner CTA.
+class _NetflixDownloadsEmpty extends StatelessWidget {
+  const _NetflixDownloadsEmpty({required this.english, this.onBrowse});
+
+  final bool english;
+  final VoidCallback? onBrowse;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = NovaStrings.of(context);
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: const BoxDecoration(
+                color: NovaColors.netflixTile,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                LucideIcons.arrowDown,
+                size: 70,
+                color: Color(0xFF6E6E6E),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              s.text('downloadsEmpty'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              s.text('downloadsEmptyBody'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: .60),
+                fontSize: 16,
+                height: 1.5,
+              ),
+            ),
+            if (onBrowse != null) ...[
+              const SizedBox(height: 24),
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+                child: InkWell(
+                  onTap: onBrowse,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 14),
+                    child: Text(
+                      NovaStrings.lookup(english, 'message576'),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}

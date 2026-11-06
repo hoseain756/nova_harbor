@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/models/media_item.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../shared/widgets/poster_card.dart';
 import '../calendar/calendar_page.dart';
 import '../catalog/catalog_browser_page.dart';
@@ -177,35 +178,38 @@ class _SearchSheetState extends State<SearchSheet>
                         }
                       },
                       textInputAction: TextInputAction.search,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      cursorColor: NovaColors.red,
                       decoration: InputDecoration(
+                          // Netflix search field: flat #323232 block, 4dp
+                          // corners, no ring until focused.
                           filled: true,
-                          fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: .6),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          fillColor: NovaColors.raised,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 14),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(999),
-                            borderSide: BorderSide(
-                              color: theme.colorScheme.outlineVariant.withValues(alpha: .5),
-                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            borderSide: BorderSide.none,
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(999),
-                            borderSide: BorderSide(
-                              color: theme.colorScheme.outlineVariant.withValues(alpha: .5),
-                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(999),
-                            borderSide: BorderSide(
-                              color: theme.colorScheme.primary,
-                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            borderSide: const BorderSide(
+                                color: Colors.white, width: 1),
                           ),
-                          prefixIcon: const Icon(LucideIcons.search, size: 20),
+                          prefixIcon: const Icon(LucideIcons.search,
+                              size: 20, color: NovaColors.textDisabled),
                           hintText: app.tr('message693'),
                           suffixIcon: _controller.text.isEmpty
                               ? null
                               : IconButton(
                                   tooltip: app.tr('message473'),
-                                  icon: const Icon(LucideIcons.x, size: 18),
+                                  icon: const Icon(LucideIcons.x,
+                                      size: 18,
+                                      color: NovaColors.textDisabled),
                                   onPressed: () {
                                     _controller.clear();
                                     _onChanged('');
@@ -291,21 +295,42 @@ class _SearchSheetState extends State<SearchSheet>
                                       gridDelegate:
                                           SliverGridDelegateWithFixedCrossAxisCount(
                                               crossAxisCount: columns,
-                                              mainAxisExtent: width / .72 +
+                                              mainAxisExtent: width * 3 / 2 +
                                                   78 *
                                                       MediaQuery.textScalerOf(
                                                               context)
                                                           .scale(1),
                                               crossAxisSpacing: 16,
                                               mainAxisSpacing: 24),
-                                      itemCount: items.length,
-                                      itemBuilder: (context, index) => PosterCard(
-                                          item: items[index],
-                                          width: width,
-                                          onTap: () => Navigator.of(context)
-                                              .push(MaterialPageRoute<void>(
-                                                  builder: (_) => MediaDetailPage(
-                                                      item: items[index])))));
+                                      itemCount: items.length + 1,
+                                      itemBuilder: (context, index) {
+                                        if (index == 0) {
+                                          // Netflix "Top Results" heading
+                                          // leads the result grid.
+                                          return Align(
+                                            alignment:
+                                                AlignmentDirectional.topStart,
+                                            child: Text(
+                                              app.tr('searchTopResults'),
+                                              style: theme.textTheme.titleMedium
+                                                  ?.copyWith(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.w700),
+                                            ),
+                                          );
+                                        }
+                                        final item = items[index - 1];
+                                        return PosterCard(
+                                            item: item,
+                                            width: width,
+                                            onTap: () =>
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute<void>(
+                                                        builder: (_) =>
+                                                            MediaDetailPage(
+                                                                item: item))));
+                                      });
                                 })),
             ])));
   }
