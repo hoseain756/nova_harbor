@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/data/catalog_repository.dart';
 import '../../../core/state/app_state.dart';
+import '../../../core/theme/nova_theme.dart';
 import '../../../l10n/nova_strings.dart';
 import '../../../shared/widgets/nova_network_image.dart';
 import 'player_sheets.dart' show SheetScaffold;
@@ -90,6 +91,7 @@ class _PlayerEpisodesSheetState extends State<PlayerEpisodesSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final season = _activeSeason;
     final visible = widget.episodes
         .where((episode) => _seasonOf(episode) == season)
@@ -106,7 +108,7 @@ class _PlayerEpisodesSheetState extends State<PlayerEpisodesSheet> {
               child: DropdownButton<int>(
                 value: season,
                 isDense: true,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(4),
                 icon: const Icon(LucideIcons.chevronDown, size: 18),
                 items: [
                   for (final value in _seasons)
@@ -127,18 +129,25 @@ class _PlayerEpisodesSheetState extends State<PlayerEpisodesSheet> {
             child: widget.loading
                 ? Center(
                     child: CircularProgressIndicator(
-                        color: scheme.primary, strokeWidth: 2.5))
+                        color: dark ? NovaColors.red : scheme.primary,
+                        strokeWidth: 2.5))
                 : visible.isEmpty
                     ? Center(
                         child: Text(
                           NovaStrings.lookup(
                               widget.english, 'playerNoEpisodes'),
-                          style: TextStyle(color: scheme.onSurfaceVariant),
+                          style: TextStyle(
+                              color: dark
+                                  ? NovaColors.mist
+                                  : scheme.onSurfaceVariant),
                         ),
                       )
                     : ListView.separated(
                         itemCount: visible.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        // Netflix episode browser: hairline #222222
+                        // separators instead of card gaps.
+                        separatorBuilder: (_, __) => const Divider(
+                            color: NovaColors.netflixLine, height: 1),
                         itemBuilder: (context, index) => _EpisodeRow(
                           english: widget.english,
                           episode: visible[index],
@@ -179,6 +188,7 @@ class _EpisodeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final season = (episode['season'] as num?)?.toInt() ?? 0;
     final number = (episode['episode'] as num?)?.toInt() ?? 0;
     final tag =
@@ -197,14 +207,16 @@ class _EpisodeRow extends StatelessWidget {
         '';
     final current = (episode['id'] ?? '').toString() == currentVideoId;
     final imageWidth = MediaQuery.sizeOf(context).width < 420 ? 112.0 : 140.0;
+    final titleText = title.isEmpty
+        ? NovaStrings.lookup(english, 'message44', {'p0': number})
+        : title;
 
-    return Material(
-      color: current ? scheme.primaryContainer : scheme.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(14),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Row(
+    // Netflix episode browser row: flat (transparent on the sheet surface),
+    // no card Material box, 8dp vertical padding, hairline separators handled
+    // by the ListView.separated builder.
+    return Padding(
+      padding: const EdgeInsetsDirectional.symmetric(vertical: 8),
+      child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(
@@ -212,12 +224,15 @@ class _EpisodeRow extends StatelessWidget {
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(9),
+                  borderRadius: BorderRadius.circular(4),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       artwork.isEmpty
-                          ? ColoredBox(color: scheme.surfaceContainerHighest)
+                          ? ColoredBox(
+                              color: dark
+                                  ? NovaColors.surfaceHigh
+                                  : scheme.surfaceContainerHighest)
                           : NovaNetworkImage(artwork,
                               fit: BoxFit.cover,
                               cacheWidth: 320,
@@ -245,41 +260,103 @@ class _EpisodeRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title.isEmpty
-                        ? NovaStrings.lookup(
-                            english, 'message44', {'p0': number})
-                        : title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 5),
-                  FilledButton.tonalIcon(
-                    onPressed: current
-                        ? null
-                        : () {
-                            Navigator.of(context).pop();
-                            onPick(episode);
-                          },
-                    icon: const Icon(LucideIcons.play, size: 15),
-                    label: Text(NovaStrings.lookup(
-                        english,
-                        current
-                            ? 'playerCurrentEpisode'
-                            : 'playerEpisodePlay')),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(80, 36),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      visualDensity: VisualDensity.compact,
+                  // Current episode: white w700 title + small red badgeCheck.
+                  if (current)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            titleText,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color:
+                                  dark ? NovaColors.white : scheme.onSurface,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(LucideIcons.badgeCheck,
+                            size: 14, color: NovaColors.red),
+                      ],
+                    )
+                  else
+                    Text(
+                      titleText,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: dark ? NovaColors.white : scheme.onSurface,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
+                  const SizedBox(height: 5),
+                  if (current)
+                    // 'Now playing' affordance: red filled circular play
+                    // button + the existing localized string (kept verbatim).
+                    Semantics(
+                      button: true,
+                      enabled: false,
+                      label: NovaStrings.lookup(
+                          english, 'playerCurrentEpisode'),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: const BoxDecoration(
+                              color: NovaColors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(LucideIcons.play,
+                                size: 16, color: NovaColors.white),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              NovaStrings.lookup(
+                                  english, 'playerCurrentEpisode'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: NovaColors.red,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    FilledButton.tonalIcon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        onPick(episode);
+                      },
+                      icon: const Icon(LucideIcons.play, size: 15),
+                      label: Text(
+                          NovaStrings.lookup(english, 'playerEpisodePlay')),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: NovaColors.raised,
+                        foregroundColor: NovaColors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4)),
+                        minimumSize: const Size(80, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
                 ],
               ),
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -292,8 +369,9 @@ class _ImageBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: .9),
-          borderRadius: BorderRadius.circular(6),
+          // Netflix thumbnail badge: black @70% fill, white 10dp w700 text.
+          color: Colors.black.withValues(alpha: .7),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
@@ -303,15 +381,14 @@ class _ImageBadge extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[
-                  Icon(icon,
-                      size: 10, color: Theme.of(context).colorScheme.onSurface),
+                  Icon(icon, size: 10, color: NovaColors.white),
                   const SizedBox(width: 2),
                 ],
                 Text(label,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      color: NovaColors.white,
                     )),
               ],
             ),

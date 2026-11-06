@@ -22,61 +22,69 @@ class AccountEntryLayout extends StatelessWidget {
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        body: SafeArea(
-          child: LayoutBuilder(builder: (context, constraints) {
-            return Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsetsDirectional.fromSTEB(
-                  NovaSpace.gutter(constraints.maxWidth),
-                  NovaSpace.xl,
-                  NovaSpace.gutter(constraints.maxWidth),
-                  NovaSpace.xl + MediaQuery.viewInsetsOf(context).bottom,
-                ),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 480),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (leading != null) ...[
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: leading,
-                        ),
-                        const SizedBox(height: NovaSpace.xl),
-                      ],
-                      const Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: NovaBrand(width: 148),
-                      ),
-                      const SizedBox(height: NovaSpace.xxl),
-                      Semantics(
-                        header: true,
-                        child: Text(title,
-                            style: Theme.of(context).textTheme.headlineMedium),
-                      ),
-                      if (description != null) ...[
-                        const SizedBox(height: NovaSpace.sm),
-                        Text(description!,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                )),
-                      ],
-                      const SizedBox(height: NovaSpace.xl),
-                      ...children,
-                    ],
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      // No background of its own: the app theme paints the Netflix black
+      // canvas and this layout adds no card-like wrapper.
+      body: SafeArea(
+        child: LayoutBuilder(builder: (context, constraints) {
+          // Netflix entry flow: full-bleed column on phones (24dp gutter),
+          // centred 480dp column on tablets (32dp gutter).
+          final wide = constraints.maxWidth >= 840;
+          final gutter = wide ? 32.0 : 24.0;
+          final column = ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (leading != null) ...[
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: leading,
                   ),
+                  const SizedBox(height: NovaSpace.xl),
+                ],
+                const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: NovaBrand(width: 148),
                 ),
-              ),
-            );
-          }),
-        ),
-      );
+                const SizedBox(height: NovaSpace.xxl),
+                Semantics(
+                  header: true,
+                  child: Text(title,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(color: dark ? NovaColors.white : null)),
+                ),
+                if (description != null) ...[
+                  const SizedBox(height: NovaSpace.sm),
+                  Text(description!,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: dark
+                                ? NovaColors.mist
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                          )),
+                ],
+                const SizedBox(height: NovaSpace.xl),
+                ...children,
+              ],
+            ),
+          );
+          return SingleChildScrollView(
+            padding: EdgeInsetsDirectional.fromSTEB(
+              gutter,
+              NovaSpace.xl,
+              gutter,
+              NovaSpace.xl + MediaQuery.viewInsetsOf(context).bottom,
+            ),
+            child: wide ? Center(child: column) : column,
+          );
+        }),
+      ),
+    );
+  }
 }
 
 class AccountWelcomePage extends StatefulWidget {
@@ -126,25 +134,34 @@ class _AccountWelcomePageState extends State<AccountWelcomePage> {
           _AccountMessage(s.text('accountGenericError')),
           const SizedBox(height: NovaSpace.md),
         ],
-        FilledButton.icon(
+        // Netflix welcome anatomy: text-only buttons — full-width red CTA,
+        // tonal secondary on #323232, then plain white links.
+        FilledButton(
           onPressed: _busy ? null : widget.onLogIn,
-          icon: const Icon(LucideIcons.logIn),
-          label: Text(s.text('accountLogIn')),
+          style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(52)),
+          child: Text(s.text('accountLogIn')),
         ),
         const SizedBox(height: NovaSpace.md),
-        OutlinedButton.icon(
+        FilledButton.tonal(
           onPressed: _busy ? null : widget.onCreateAccount,
-          icon: const Icon(LucideIcons.userRoundPlus),
-          label: Text(s.text('accountCreate')),
+          style: FilledButton.styleFrom(
+            backgroundColor: NovaColors.raised,
+            foregroundColor: NovaColors.white,
+            disabledBackgroundColor: NovaColors.raised.withValues(alpha: .5),
+            disabledForegroundColor: NovaColors.white.withValues(alpha: .5),
+            minimumSize: const Size.fromHeight(52),
+          ),
+          child: Text(s.text('accountCreate')),
         ),
         const SizedBox(height: NovaSpace.md),
-        TextButton.icon(
+        TextButton(
           onPressed: _busy ? null : _continue,
-          icon: const Icon(LucideIcons.userRound),
-          label: Text(s.text('accountGuest')),
+          style: _whiteLinkStyle(context),
+          child: Text(s.text('accountGuest')),
         ),
         if (widget.onResumeGuest != null)
-          TextButton.icon(
+          TextButton(
             onPressed: _busy
                 ? null
                 : () async {
@@ -160,8 +177,8 @@ class _AccountWelcomePageState extends State<AccountWelcomePage> {
                       if (mounted) setState(() => _busy = false);
                     }
                   },
-            icon: const Icon(LucideIcons.rotateCcw),
-            label: Text(s.text('accountSwitchGuest')),
+            style: _whiteLinkStyle(context),
+            child: Text(s.text('accountSwitchGuest')),
           ),
         if (_busy) ...[
           const SizedBox(height: NovaSpace.md),
@@ -269,10 +286,11 @@ class _AccountSignInPageState extends State<AccountSignInPage> {
                   ? s.text('accountRequired')
                   : null,
             ),
-            Align(
-              alignment: AlignmentDirectional.centerEnd,
+            // Netflix: muted, centred "forgot password" link under the form.
+            Center(
               child: TextButton(
                 onPressed: _busy ? null : widget.onForgotPassword,
+                style: _mutedLinkStyle(context),
                 child: Text(s.text('accountForgotPassword')),
               ),
             ),
@@ -282,6 +300,8 @@ class _AccountSignInPageState extends State<AccountSignInPage> {
             ],
             FilledButton(
               onPressed: _busy ? null : _submit,
+              style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52)),
               child: Text(s.text('accountLogIn')),
             ),
             if (_busy) ...[
@@ -425,6 +445,8 @@ class _AccountSignUpPageState extends State<AccountSignUpPage> {
             ],
             FilledButton(
               onPressed: _busy ? null : _submit,
+              style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52)),
               child: Text(s.text('accountCreate')),
             ),
             if (_busy) ...[
@@ -529,6 +551,8 @@ class _AccountUsernameCompletionPageState
             ],
             FilledButton(
               onPressed: _busy ? null : _submit,
+              style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52)),
               child: Text(s.text('accountContinue')),
             ),
             if (_busy) ...[
@@ -615,6 +639,8 @@ class _AccountNewPasswordPageState extends State<AccountNewPasswordPage> {
             ],
             FilledButton(
               onPressed: _busy ? null : _submit,
+              style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52)),
               child: Text(s.text('accountSavePassword')),
             ),
             if (_busy) ...[
@@ -660,18 +686,22 @@ class _AccountEmailVerificationPageState
         ],
         FilledButton(
           onPressed: _busy ? null : () => _run(widget.onCheckVerification),
+          style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(52)),
           child: Text(s.text('accountUpgradeCheck')),
         ),
         if (widget.onResend != null) ...[
           const SizedBox(height: NovaSpace.sm),
           TextButton(
             onPressed: _busy ? null : () => _run(widget.onResend!),
+            style: _whiteLinkStyle(context),
             child: Text(s.text('accountVerifyResend')),
           ),
         ],
         if (widget.onCancel != null)
           TextButton(
               onPressed: widget.onCancel,
+              style: _whiteLinkStyle(context),
               child: Text(s.text('accountReturnWelcome'))),
         if (_busy) ...[
           const SizedBox(height: NovaSpace.md),
@@ -816,6 +846,8 @@ class _GuestUpgradePageState extends State<GuestUpgradePage> {
                   const SizedBox(height: NovaSpace.lg),
                   FilledButton(
                     onPressed: _busy ? null : _finish,
+                    style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52)),
                     child: Text(s.text('accountUpgradeFinish')),
                   ),
                 ]),
@@ -825,6 +857,8 @@ class _GuestUpgradePageState extends State<GuestUpgradePage> {
           const SizedBox(height: NovaSpace.lg),
           FilledButton(
             onPressed: _busy ? null : _checkVerification,
+            style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(52)),
             child: Text(s.text('accountUpgradeCheck')),
           ),
         ] else
@@ -858,6 +892,8 @@ class _GuestUpgradePageState extends State<GuestUpgradePage> {
                   const SizedBox(height: NovaSpace.lg),
                   FilledButton(
                     onPressed: _busy ? null : _start,
+                    style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52)),
                     child: Text(s.text('accountUpgradeSend')),
                   ),
                 ]),
@@ -936,6 +972,8 @@ class _AccountResetPageState extends State<AccountResetPage> {
                 ],
                 FilledButton(
                     onPressed: _busy ? null : _submit,
+                    style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52)),
                     child: Text(s.text('accountResetAction'))),
                 if (_busy) ...[
                   const SizedBox(height: NovaSpace.md),
@@ -962,6 +1000,7 @@ class _BackButton extends StatelessWidget {
       );
 }
 
+/// Netflix form-level error: warm warning text on the #262626 banner.
 class _AccountMessage extends StatelessWidget {
   const _AccountMessage(this.message);
 
@@ -970,11 +1009,46 @@ class _AccountMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
         liveRegion: true,
-        child: Text(
-          message,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: NovaColors.surfaceHigh,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            message,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: NovaColors.warning,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
         ),
       );
+}
+
+/// Netflix secondary link: plain white w600 text.
+ButtonStyle _whiteLinkStyle(BuildContext context) {
+  final dark = Theme.of(context).brightness == Brightness.dark;
+  final color =
+      dark ? NovaColors.white : Theme.of(context).colorScheme.onSurface;
+  return TextButton.styleFrom(
+    foregroundColor: color,
+    disabledForegroundColor: color.withValues(alpha: .45),
+    textStyle: const TextStyle(fontWeight: FontWeight.w600),
+  );
+}
+
+/// Netflix tertiary link: muted (#A0A0A0) w600 text, e.g. forgot password.
+ButtonStyle _mutedLinkStyle(BuildContext context) {
+  final dark = Theme.of(context).brightness == Brightness.dark;
+  final color = dark
+      ? NovaColors.mist
+      : Theme.of(context).colorScheme.onSurfaceVariant;
+  return TextButton.styleFrom(
+    foregroundColor: color,
+    disabledForegroundColor: color.withValues(alpha: .45),
+    textStyle: const TextStyle(fontWeight: FontWeight.w600),
+  );
 }

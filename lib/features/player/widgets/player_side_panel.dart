@@ -28,6 +28,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../media/stream_loading.dart';
 
+import '../../../core/theme/nova_theme.dart';
 import '../engine/playback_engine.dart';
 import '../../../shared/widgets/shimmer_box.dart';
 import 'precise_delay_value.dart';
@@ -77,10 +78,12 @@ class PlayerSidePanel extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final portrait = size.width < 600 && size.height > size.width;
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final padding = MediaQuery.paddingOf(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return Material(
-      color: scheme.surface,
+      // Netflix sheet surface: #161616 in dark, scheme.surface in light.
+      color: dark ? NovaColors.graphite : scheme.surface,
       elevation: 12,
       shadowColor: scheme.shadow.withValues(alpha: .24),
       borderRadius: portrait
@@ -105,7 +108,9 @@ class PlayerSidePanel extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                        color: scheme.outlineVariant,
+                        color: dark
+                            ? NovaColors.textDisabled
+                            : scheme.outlineVariant,
                         borderRadius: BorderRadius.circular(4)))),
             const SizedBox(height: 16)
           ],
@@ -192,7 +197,9 @@ class _PanelIconButton extends StatelessWidget {
   final bool selected;
 
   @override
-  Widget build(BuildContext context) => Semantics(
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Semantics(
         button: true,
         selected: selected,
         label: semanticLabel,
@@ -207,17 +214,24 @@ class _PanelIconButton extends StatelessWidget {
                     padding: EdgeInsets.all(8),
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: dark
+                          ? NovaColors.red
+                          : Theme.of(context).colorScheme.primary,
                     ),
                   )
                 : Icon(icon,
                     size: 18,
                     color: selected
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.onSurfaceVariant),
+                        ? (dark
+                            ? NovaColors.red
+                            : Theme.of(context).colorScheme.primary)
+                        : (dark
+                            ? NovaColors.white
+                            : Theme.of(context).colorScheme.onSurface)),
           ),
         ),
       );
+  }
 }
 
 /// Public panel-header icon button — used by the page to put the subtitle
@@ -239,7 +253,9 @@ class PanelSettingsButton extends StatelessWidget {
             height: 48,
             child: Icon(LucideIcons.settings2,
                 size: 18,
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? NovaColors.white
+                    : Theme.of(context).colorScheme.onSurface),
           ),
         ),
       );
@@ -258,7 +274,9 @@ class _PanelNote extends StatelessWidget {
             text,
             textAlign: TextAlign.center,
             style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? NovaColors.mist
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 13),
           ),
         ),
@@ -394,6 +412,7 @@ class _AudioTracksPanelBodyState extends State<AudioTracksPanelBody> {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final groups = _groups.entries.toList();
     if (widget.tracks.isEmpty) {
       return _PanelNote(
@@ -407,7 +426,10 @@ class _AudioTracksPanelBodyState extends State<AudioTracksPanelBody> {
           child: ListView.separated(
             itemCount: groups.length,
             separatorBuilder: (_, __) => Divider(
-                color: Theme.of(context).colorScheme.outlineVariant, height: 1),
+                color: dark
+                    ? NovaColors.netflixLine
+                    : Theme.of(context).colorScheme.outlineVariant,
+                height: 1),
             itemBuilder: (context, index) {
               final entry = groups[index];
               return Column(
@@ -419,7 +441,9 @@ class _AudioTracksPanelBodyState extends State<AudioTracksPanelBody> {
                     child: Text(
                       _groupTitle(entry.key),
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: dark
+                            ? NovaColors.white
+                            : Theme.of(context).colorScheme.onSurface,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
                         letterSpacing: .5,
@@ -430,20 +454,21 @@ class _AudioTracksPanelBodyState extends State<AudioTracksPanelBody> {
                     ListTile(
                       dense: false,
                       selected: track.id == widget.selected.id,
-                      leading: Icon(
-                        track.id == widget.selected.id
-                            ? LucideIcons.circleDot
-                            : LucideIcons.circle,
-                        size: 20,
-                        color: track.id == widget.selected.id
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                      // Netflix selection row: no radio circles — the red
+                      // check marks the selected track at the row END.
                       title: Text(
                         _label(track),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: track.id == widget.selected.id
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: dark
+                              ? NovaColors.white
+                              : Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                       subtitle: _info(track).isEmpty
                           ? null
@@ -452,11 +477,20 @@ class _AudioTracksPanelBodyState extends State<AudioTracksPanelBody> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
+                                  color: dark
+                                      ? NovaColors.mist
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
                                   fontSize: 12),
                             ),
+                      trailing: track.id == widget.selected.id
+                          ? Icon(LucideIcons.check,
+                              size: 20,
+                              color: dark
+                                  ? NovaColors.red
+                                  : Theme.of(context).colorScheme.primary)
+                          : null,
                       onTap: () => widget.onPick(track),
                     ),
                 ],
@@ -464,7 +498,11 @@ class _AudioTracksPanelBodyState extends State<AudioTracksPanelBody> {
             },
           ),
         ),
-        Divider(color: Theme.of(context).colorScheme.outlineVariant, height: 1),
+        Divider(
+            color: dark
+                ? NovaColors.netflixLine
+                : Theme.of(context).colorScheme.outlineVariant,
+            height: 1),
         Padding(
             padding: const EdgeInsetsDirectional.only(top: 16),
             child:
@@ -504,7 +542,10 @@ class _StepperButton extends StatelessWidget {
           width: 48,
           height: 48,
           child: Icon(icon,
-              size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              size: 20,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? NovaColors.mist
+                  : Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
 }
@@ -677,6 +718,8 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
 
   Widget _languageHeader(String key, int count) {
     final open = _search.text.trim().isNotEmpty || _expanded.contains(key);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: () => setState(() {
@@ -694,7 +737,7 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
               child: Icon(
                 LucideIcons.chevronDown,
                 size: 18,
-                color: Theme.of(context).colorScheme.primary,
+                color: dark ? NovaColors.mist : scheme.onSurfaceVariant,
               ),
             ),
             SizedBox(width: 6),
@@ -702,7 +745,7 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
               child: Text(
                 _groupTitle(key),
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: dark ? NovaColors.white : scheme.onSurface,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
                   letterSpacing: .4,
@@ -712,18 +755,15 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: .06),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                    color: Theme.of(context).colorScheme.outlineVariant),
+                color: dark
+                    ? NovaColors.raised
+                    : scheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 '$count',
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: dark ? NovaColors.white : scheme.onSurface,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   fontFeatures: [FontFeature.tabularFigures()],
@@ -738,25 +778,22 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
 
   Widget _choiceRow(SubtitleChoice choice) {
     final isSelected = choice.track.id == widget.selected.id;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
+    // Netflix selection row: flat, no radio circle — the red check marks the
+    // selected choice at the row END.
     return ListTile(
       dense: false,
       selected: isSelected,
-      leading: Icon(
-        isSelected
-            ? LucideIcons.circleDot
-            : (choice.track.uri
-                ? LucideIcons.cloudDownload
-                : LucideIcons.circle),
-        size: 20,
-        color: isSelected
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
       title: Text(
         choice.title,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 14),
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          color: dark ? NovaColors.white : scheme.onSurface,
+        ),
       ),
       subtitle: choice.subtitle?.isNotEmpty == true
           ? Text(
@@ -764,9 +801,13 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: dark ? NovaColors.mist : scheme.onSurfaceVariant,
                   fontSize: 12),
             )
+          : null,
+      trailing: isSelected
+          ? Icon(LucideIcons.check,
+              size: 20, color: dark ? NovaColors.red : scheme.primary)
           : null,
       onTap: () => widget.onPick(choice.track),
     );
@@ -774,6 +815,8 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
     final off = SubtitleTrack.no();
     final offSelected = widget.selected.id == off.id;
     final groups = _groups;
@@ -801,8 +844,14 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
                     textInputAction: TextInputAction.search,
                     decoration: InputDecoration(
                       isDense: true,
+                      // Netflix input: #323232 fill, 4dp radius.
+                      filled: true,
+                      fillColor: dark
+                          ? NovaColors.raised
+                          : scheme.surfaceContainerHighest,
                       contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                      prefixIcon: Icon(LucideIcons.search, size: 18),
+                      prefixIcon: Icon(LucideIcons.search,
+                          size: 18, color: dark ? NovaColors.mist : null),
                       prefixIconConstraints:
                           const BoxConstraints(minWidth: 40, minHeight: 40),
                       suffixIcon: _search.text.isEmpty
@@ -819,22 +868,20 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
                       hintStyle: Theme.of(context).textTheme.bodyMedium,
                       constraints: const BoxConstraints(minHeight: 48),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color:
-                                Theme.of(context).colorScheme.outlineVariant),
+                        borderRadius: BorderRadius.circular(4),
+                        borderSide:
+                            const BorderSide(color: Colors.transparent),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color:
-                                Theme.of(context).colorScheme.outlineVariant),
+                        borderRadius: BorderRadius.circular(4),
+                        borderSide:
+                            const BorderSide(color: Colors.transparent),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(4),
                         borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.primary,
-                            width: 1.4),
+                            color: dark ? NovaColors.white : scheme.primary,
+                            width: 1.2),
                       ),
                     ),
                   ))),
@@ -860,7 +907,9 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
           ),
         SizedBox(height: 10),
         Divider(
-            color: Theme.of(context).colorScheme.outlineVariant, height: 14),
+            color:
+                dark ? NovaColors.netflixLine : scheme.outlineVariant,
+            height: 14),
         if (widget.loadFailed)
           _PanelFetchError(
             message: NovaStrings.lookup(widget.english, 'subtitleSearchFailed'),
@@ -885,33 +934,39 @@ class _SubtitleTracksPanelBodyState extends State<SubtitleTracksPanelBody> {
                         ListTile(
                           dense: false,
                           selected: offSelected,
-                          leading: Icon(
-                            offSelected
-                                ? LucideIcons.circleDot
-                                : LucideIcons.captionsOff,
-                            size: 20,
-                            color: offSelected
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                          ),
                           title: Text(
                             NovaStrings.lookup(widget.english, 'message4'),
-                            style: TextStyle(fontSize: 14),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: offSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color:
+                                  dark ? NovaColors.white : scheme.onSurface,
+                            ),
                           ),
+                          trailing: offSelected
+                              ? Icon(LucideIcons.check,
+                                  size: 20,
+                                  color: dark
+                                      ? NovaColors.red
+                                      : scheme.primary)
+                              : null,
                           onTap: () => widget.onPick(off),
                         ),
                         Divider(
-                            color: Theme.of(context).colorScheme.outlineVariant,
+                            color: dark
+                                ? NovaColors.netflixLine
+                                : scheme.outlineVariant,
                             height: 1),
                         for (final entry in visibleGroups.entries) ...[
                           _languageHeader(entry.key, entry.value.length),
                           if (_isOpen(entry.key, visibleGroups))
                             ...entry.value.map(_choiceRow),
                           Divider(
-                              color:
-                                  Theme.of(context).colorScheme.outlineVariant,
+                              color: dark
+                                  ? NovaColors.netflixLine
+                                  : scheme.outlineVariant,
                               height: 1),
                         ],
                       ],
@@ -954,6 +1009,7 @@ class _StreamsPanelBodyState extends State<StreamsPanelBody> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final streams = widget.streams
         .where((stream) =>
             '${stream['title']} ${stream['name']} ${stream['addonName']}'
@@ -999,7 +1055,10 @@ class _StreamsPanelBodyState extends State<StreamsPanelBody> {
                   : _PanelNote(NovaStrings.lookup(widget.english, 'message81'))
               : ListView.separated(
                   itemCount: streams.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => Divider(
+                      color:
+                          dark ? NovaColors.netflixLine : scheme.outlineVariant,
+                      height: 1),
                   itemBuilder: (context, index) {
                     final stream = streams[index];
                     final playable = stream[unavailableTorrentSourceKey] !=
@@ -1012,31 +1071,48 @@ class _StreamsPanelBodyState extends State<StreamsPanelBody> {
                         current != null &&
                             stream['url'] == current['url'] &&
                             stream['infoHash'] == current['infoHash'];
+                    // Netflix source row: flat on the panel surface (no
+                    // card fill), hairline separators, red check at the row
+                    // END for the selected source; unavailable rows stay
+                    // visible but muted (#6B6B6B, no check).
                     return ListTile(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: BorderSide(
-                              color: selected
-                                  ? scheme.primary
-                                  : scheme.outlineVariant)),
-                      tileColor: selected
-                          ? scheme.primaryContainer
-                          : scheme.surfaceContainerLow,
-                      contentPadding: const EdgeInsets.all(16),
+                      contentPadding: const EdgeInsetsDirectional.fromSTEB(
+                          4, 8, 4, 8),
                       selected: selected,
                       enabled: playable,
-                      leading: Icon(
-                          selected ? LucideIcons.circleCheck : LucideIcons.play,
-                          color: selected
-                              ? scheme.primary
-                              : scheme.onSurfaceVariant),
+                      leading: selected && playable
+                          ? Icon(LucideIcons.check,
+                              size: 20,
+                              color: dark ? NovaColors.red : scheme.primary)
+                          : Icon(LucideIcons.play,
+                              size: 20,
+                              color: !playable
+                                  ? (dark
+                                      ? NovaColors.textDisabled
+                                      : scheme.onSurfaceVariant)
+                                  : (dark
+                                      ? NovaColors.mist
+                                      : scheme.onSurfaceVariant)),
                       title: Text(
                           (stream['title'] ?? stream['name'] ?? '')
                               .toString()
                               .split('\n')
                               .first,
                           maxLines: 2,
-                          overflow: TextOverflow.ellipsis),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: selected && playable
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: !playable
+                                ? (dark
+                                    ? NovaColors.textDisabled
+                                    : scheme.onSurfaceVariant)
+                                : (dark
+                                    ? NovaColors.white
+                                    : scheme.onSurface),
+                          )),
                       subtitle: Padding(
                           padding: const EdgeInsetsDirectional.only(top: 8),
                           child: Column(
@@ -1044,7 +1120,9 @@ class _StreamsPanelBodyState extends State<StreamsPanelBody> {
                               children: [
                                 Text(stream['addonName']?.toString() ?? '',
                                     style: TextStyle(
-                                        color: scheme.onSurfaceVariant)),
+                                        color: dark
+                                            ? NovaColors.mist
+                                            : scheme.onSurfaceVariant)),
                                 if (stream[unavailableTorrentSourceKey] == true)
                                   Text(
                                       NovaStrings.lookup(
@@ -1098,6 +1176,8 @@ class PlayerSettingsPanelBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
     return ListView(
       padding: const EdgeInsetsDirectional.only(bottom: 4),
       children: [
@@ -1106,7 +1186,7 @@ class PlayerSettingsPanelBody extends StatelessWidget {
           child: Text(
             NovaStrings.lookup(english, 'message82'),
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: dark ? NovaColors.mist : scheme.onSurfaceVariant,
               fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: .8,
@@ -1130,7 +1210,7 @@ class PlayerSettingsPanelBody extends StatelessWidget {
           child: Text(
             NovaStrings.lookup(english, 'message83'),
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: dark ? NovaColors.mist : scheme.onSurfaceVariant,
               fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: .8,
@@ -1161,18 +1241,21 @@ class PlayerSettingsPanelBody extends StatelessWidget {
         ListTile(
           dense: false,
           leading: Icon(LucideIcons.audioLines,
-              size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              size: 20,
+              color: dark ? NovaColors.mist : scheme.onSurfaceVariant),
           title: Text(
             NovaStrings.lookup(english, 'message87'),
             style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
+                color: dark ? NovaColors.white : scheme.onSurface,
+                fontSize: 15,
+                fontWeight: FontWeight.w500),
           ),
           subtitle: Text(
             audioLabel,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: dark ? NovaColors.mist : scheme.onSurfaceVariant,
                 fontSize: 12),
           ),
           trailing: Icon(
@@ -1180,25 +1263,31 @@ class PlayerSettingsPanelBody extends StatelessWidget {
                 ? LucideIcons.chevronLeft
                 : LucideIcons.chevronRight,
             size: 20,
-            color: Theme.of(context).colorScheme.outline,
+            color: dark ? NovaColors.textDisabled : scheme.outline,
           ),
           onTap: onOpenAudio,
         ),
+        Divider(
+            color: dark ? NovaColors.netflixLine : scheme.outlineVariant,
+            height: 1),
         ListTile(
           dense: false,
           leading: Icon(LucideIcons.captions,
-              size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              size: 20,
+              color: dark ? NovaColors.mist : scheme.onSurfaceVariant),
           title: Text(
             NovaStrings.lookup(english, 'message7'),
             style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
+                color: dark ? NovaColors.white : scheme.onSurface,
+                fontSize: 15,
+                fontWeight: FontWeight.w500),
           ),
           subtitle: Text(
             subtitleLabel,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: dark ? NovaColors.mist : scheme.onSurfaceVariant,
                 fontSize: 12),
           ),
           trailing: Icon(
@@ -1206,32 +1295,38 @@ class PlayerSettingsPanelBody extends StatelessWidget {
                 ? LucideIcons.chevronLeft
                 : LucideIcons.chevronRight,
             size: 20,
-            color: Theme.of(context).colorScheme.outline,
+            color: dark ? NovaColors.textDisabled : scheme.outline,
           ),
           onTap: onOpenSubtitles,
         ),
-        if (hasEpisodes)
+        if (hasEpisodes) ...[
+          Divider(
+              color: dark ? NovaColors.netflixLine : scheme.outlineVariant,
+              height: 1),
           ListTile(
             dense: false,
             leading: Icon(
               LucideIcons.listVideo,
               size: 20,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: dark ? NovaColors.mist : scheme.onSurfaceVariant,
             ),
             title: Text(
               NovaStrings.lookup(english, 'message43'),
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
+                  color: dark ? NovaColors.white : scheme.onSurface,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500),
             ),
             trailing: Icon(
               Directionality.of(context) == TextDirection.rtl
                   ? LucideIcons.chevronLeft
                   : LucideIcons.chevronRight,
               size: 20,
-              color: Theme.of(context).colorScheme.outline,
+              color: dark ? NovaColors.textDisabled : scheme.outline,
             ),
             onTap: onOpenEpisodes,
           ),
+        ],
       ],
     );
   }

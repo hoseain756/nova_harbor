@@ -232,7 +232,7 @@ class _WatchlistCard extends StatelessWidget {
                           onPressed: () => app.toggleWatchlist(item))));
                 },
                 icon: Icon(LucideIcons.bookmark,
-                    color: NovaTheme.of(context).gold),
+                    color: NovaColors.white),
               ),
             ),
           ),
@@ -375,7 +375,7 @@ class _HistoryRow extends StatelessWidget {
                             color: NovaTheme.of(context).raised,
                             child: Icon(
                               LucideIcons.film,
-                              color: NovaTheme.of(context).gold,
+                              color: NovaColors.white,
                             ),
                           ),
                           PositionedDirectional(
@@ -389,7 +389,7 @@ class _HistoryRow extends StatelessWidget {
                               ),
                               child: Icon(
                                 LucideIcons.zap,
-                                color: NovaTheme.of(context).gold,
+                                color: NovaColors.white,
                                 size: 13,
                               ),
                             ),
@@ -401,7 +401,7 @@ class _HistoryRow extends StatelessWidget {
                             color: NovaTheme.of(context).raised,
                             child: Icon(
                               LucideIcons.film,
-                              color: NovaTheme.of(context).gold,
+                              color: NovaColors.white,
                             ),
                           )
                         : NovaNetworkImage(
@@ -413,7 +413,7 @@ class _HistoryRow extends StatelessWidget {
                               color: NovaTheme.of(context).raised,
                               child: Icon(
                                 LucideIcons.film,
-                                color: NovaTheme.of(context).gold,
+                                color: NovaColors.white,
                               ),
                             ),
                           ),
@@ -441,7 +441,7 @@ class _HistoryRow extends StatelessWidget {
                       value: progress,
                       minHeight: 3,
                       backgroundColor: NovaTheme.of(context).line,
-                      color: NovaTheme.of(context).gold,
+                      color: NovaColors.red,
                     ),
                   ],
                 ],
@@ -483,7 +483,7 @@ class _EmptyLibrary extends StatelessWidget {
                   color: NovaTheme.of(context).surface,
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Icon(icon, color: NovaTheme.of(context).gold, size: 27),
+                child: Icon(icon, color: NovaColors.mist, size: 27),
               ),
               const SizedBox(height: 15),
               Text(title, style: Theme.of(context).textTheme.titleMedium),

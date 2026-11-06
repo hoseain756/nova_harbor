@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/shared_collections/invite_link.dart';
 import '../../core/shared_collections/shared_collections_service.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../l10n/nova_strings.dart';
 import 'shared_collection_detail_page.dart';
 
@@ -195,7 +196,8 @@ class _SharedCollectionsPanelState extends State<SharedCollectionsPanel>
         const SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.all(24),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(
+                child: CircularProgressIndicator(color: NovaColors.red)),
           ),
         )
       else if (_error != null)
@@ -213,7 +215,8 @@ class _SharedCollectionsPanelState extends State<SharedCollectionsPanel>
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 32),
             child: Text(strings.text('sharedEmpty'),
-                style: Theme.of(context).textTheme.bodyMedium),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurfaceVariant)),
           ),
         )
       else
@@ -228,7 +231,8 @@ class _SharedCollectionsPanelState extends State<SharedCollectionsPanel>
               return ListTile(
                 minTileHeight: 72,
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(LucideIcons.usersRound, color: scheme.primary),
+                leading: Icon(LucideIcons.usersRound,
+                    color: scheme.onSurfaceVariant),
                 title: Text(collection.name,
                     maxLines: 1, overflow: TextOverflow.ellipsis),
                 subtitle: Text(isOwner

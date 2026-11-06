@@ -24,7 +24,13 @@ class OnboardingPage extends StatelessWidget {
         Semantics(
             header: true,
             child: Text(s.text('welcomeTitle'),
-                style: Theme.of(context).textTheme.displaySmall)),
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      // Netflix hero headline: big, bold, white on black.
+                      color: scheme.brightness == Brightness.dark
+                          ? NovaColors.white
+                          : null,
+                      fontWeight: FontWeight.w700,
+                    ))),
         const SizedBox(height: 24),
         Text(s.text('welcomeBody'),
             style: Theme.of(context)
@@ -40,12 +46,13 @@ class OnboardingPage extends StatelessWidget {
           ])
             DecoratedBox(
                 decoration: BoxDecoration(
-                    color: scheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(20)),
+                    // Netflix grey tiles with white icons.
+                    color: NovaColors.raised,
+                    borderRadius: BorderRadius.circular(8)),
                 child: Padding(
                     padding: const EdgeInsets.all(24),
                     child:
-                        Icon(icon, color: scheme.onPrimaryContainer, size: 32)))
+                        Icon(icon, color: NovaColors.white, size: 32)))
         ]),
       ]);
       final choices =
@@ -77,6 +84,8 @@ class OnboardingPage extends StatelessWidget {
         const SizedBox(height: 32),
         FilledButton.icon(
             onPressed: onComplete,
+            style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(52)),
             icon: const Icon(LucideIcons.play),
             label: Text(s.text('startExploring'))),
         const SizedBox(height: 16),

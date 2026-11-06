@@ -420,7 +420,7 @@ class _CatalogState extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 36, color: NovaTheme.of(context).gold),
+              Icon(icon, size: 36, color: NovaColors.mist),
               const SizedBox(height: 14),
               Text(message, textAlign: TextAlign.center),
               if (onRetry != null && actionLabel != null) ...[
@@ -466,13 +466,13 @@ class _AniListLinkPrompt extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: NovaTheme.of(context).gold.withValues(alpha: .14),
+                  color: NovaColors.raised.withValues(alpha: .14),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   LucideIcons.sparkles,
                   size: 22,
-                  color: NovaTheme.of(context).gold,
+                  color: NovaColors.red,
                 ),
               ),
               const SizedBox(width: 12),

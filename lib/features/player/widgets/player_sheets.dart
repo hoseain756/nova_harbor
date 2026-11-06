@@ -13,11 +13,11 @@ import 'precise_delay_value.dart';
 import 'subtitle_font_picker.dart';
 import 'subtitle_overlay.dart' show SubtitleStyle;
 
-/// Dark-glass bottom sheets used by the player (settings, episodes,
-/// subtitle style). They belong to the app's design language; the on-video
-/// chrome follows the cinematic reference, and the subtitle / audio /
-/// source pickers live in the RIGHT-HALF side panel
-/// (widgets/player_side_panel.dart, Task 139 user mandate).
+/// Netflix-style bottom sheets used by the player (episodes, subtitle
+/// style): opaque #161616 surfaces, bold white headers, red selection
+/// checks, no glass/blur. The on-video chrome follows the cinematic
+/// reference, and the subtitle / audio / source pickers live in the
+/// RIGHT-HALF side panel (widgets/player_side_panel.dart, Task 139 mandate).
 
 /// Common subtitle language codes → native names (Task 124 mandate: the
 /// subtitles window groups addon results by language). Unknown codes fall
@@ -74,6 +74,10 @@ Future<T?> showPlayerSheet<T>(
   required WidgetBuilder builder,
 }) {
   final size = MediaQuery.sizeOf(context);
+  final dark = Theme.of(context).brightness == Brightness.dark;
+  // Netflix sheet surface: #161616 in dark, scheme.surface in light.
+  final sheetColor =
+      dark ? NovaColors.graphite : Theme.of(context).colorScheme.surface;
   if (size.width >= 700 || size.width > size.height) {
     return showGeneralDialog<T>(
       context: context,
@@ -100,11 +104,8 @@ Future<T?> showPlayerSheet<T>(
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Material(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerLow
-                      .withValues(alpha: .98),
-                  borderRadius: BorderRadius.circular(22),
+                  color: sheetColor,
+                  borderRadius: BorderRadius.circular(16),
                   clipBehavior: Clip.antiAlias,
                   elevation: 12,
                   shadowColor: Theme.of(context)
@@ -126,11 +127,11 @@ Future<T?> showPlayerSheet<T>(
   }
   return showModalBottomSheet<T>(
     context: context,
-    backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+    backgroundColor: sheetColor,
     isScrollControlled: true,
     constraints: BoxConstraints(maxHeight: size.height * .86),
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
     sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
         ? AnimationStyle.noAnimation
@@ -167,6 +168,8 @@ class SheetScaffold extends StatelessWidget {
     // Compact geometry for short landscape phone screens (~360–412 dp tall):
     // smaller paddings, header and close target leave the list usable.
     final compact = MediaQuery.sizeOf(context).height < 520;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
     final EdgeInsetsGeometry insets = expanded
         ? EdgeInsetsDirectional.fromSTEB(
             compact ? 14 : 18,
@@ -182,7 +185,12 @@ class SheetScaffold extends StatelessWidget {
           title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.titleLarge,
+          // Netflix sheet header: bold white title (18dp w700 on dark).
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: dark ? NovaColors.white : scheme.onSurface,
+              ),
         )),
         if (headerAction != null) ...[
           headerAction!,
@@ -192,12 +200,12 @@ class SheetScaffold extends StatelessWidget {
           customBorder: CircleBorder(),
           onTap: () => Navigator.of(context).pop(),
           child: SizedBox(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             child: Icon(
               LucideIcons.x,
               size: compact && expanded ? 17 : 18,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: dark ? NovaColors.white : scheme.onSurface,
             ),
           ),
         ),
@@ -216,15 +224,41 @@ class SheetScaffold extends StatelessWidget {
         ],
       ],
     );
+    // Netflix sheet chrome: #161616 surface with a 16dp top radius, a
+    // 4×32 #6B6B6B drag handle centered 8dp from the top, no glass/blur.
     return SafeArea(
-      child: expanded
-          ? Padding(padding: insets, child: column)
-          : ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.sizeOf(context).height * .82,
+      child: Material(
+        color: dark ? NovaColors.graphite : scheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                margin: const EdgeInsetsDirectional.only(top: 8),
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: NovaColors.textDisabled,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-              child: Padding(padding: insets, child: column),
             ),
+            expanded
+                ? Expanded(
+                    child: Padding(padding: insets, child: column))
+                : Flexible(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.sizeOf(context).height * .82,
+                      ),
+                      child: Padding(padding: insets, child: column),
+                    ),
+                  ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -249,41 +283,44 @@ class SheetSelectChip extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 48),
-        child: Material(
-          color: selected
-              ? Theme.of(context).colorScheme.primaryContainer
-              : Theme.of(context).colorScheme.surfaceContainerHigh,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                  color: selected
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.outlineVariant)),
-          child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: onTap,
-              child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Center(
-                      child: Text(label,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge
-                              ?.copyWith(
-                                  color: selected
-                                      ? Theme.of(context)
-                                          .colorScheme
-                                          .onPrimaryContainer
-                                      : Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant))))),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
+    // Netflix selection chip: flat #323232 fill, 4dp radius; the selected
+    // chip inverts to a white pill with ink text (no outline boxes).
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
+      child: Material(
+        color: selected
+            ? (dark ? NovaColors.white : scheme.onSurface)
+            : (dark ? NovaColors.raised : scheme.surfaceContainerHigh),
+        borderRadius: BorderRadius.circular(4),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+            borderRadius: BorderRadius.circular(4),
+            onTap: onTap,
+            child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Center(
+                    child: Text(label,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelLarge
+                            ?.copyWith(
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected
+                                    ? (dark ? NovaColors.ink : scheme.surface)
+                                    : (dark
+                                        ? NovaColors.white
+                                        : scheme.onSurface)))))),
+      ),
+    );
+  }
 }
 
 // ── Track pickers ──────────────────────────────────────────────────────────
@@ -333,7 +370,9 @@ class _DelayButton extends StatelessWidget {
             height: 48,
             child: Icon(icon,
                 size: 20,
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? NovaColors.mist
+                    : Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ),
       );
@@ -357,13 +396,16 @@ class EpisodesSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
     return SheetScaffold(
       title: NovaStrings.lookup(english, 'message43'),
       child: ListView.separated(
         shrinkWrap: true,
         itemCount: episodes.length,
         separatorBuilder: (_, __) => Divider(
-            color: Theme.of(context).colorScheme.outlineVariant, height: 1),
+            color: dark ? NovaColors.netflixLine : scheme.outlineVariant,
+            height: 1),
         itemBuilder: (context, index) {
           final episode = episodes[index];
           final season = (episode['season'] as num?)?.toInt() ?? 0;
@@ -382,8 +424,8 @@ class EpisodesSheet extends StatelessWidget {
                 number == 0 ? '$index' : '$number',
                 style: TextStyle(
                   color: isCurrent
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                      ? (dark ? NovaColors.red : scheme.primary)
+                      : (dark ? NovaColors.mist : scheme.onSurfaceVariant),
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   fontFeatures: const [FontFeature.tabularFigures()],
@@ -396,19 +438,28 @@ class EpisodesSheet extends StatelessWidget {
                   : name,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 14),
+              // Netflix selection row: white 15dp, w700 only on the
+              // selected (current) row.
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                color: dark ? NovaColors.white : scheme.onSurface,
+              ),
             ),
             subtitle: season > 0
                 ? Text(
                     NovaStrings.lookup(english, 'message45', {'p0': season}),
                     style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: dark
+                            ? NovaColors.mist
+                            : scheme.onSurfaceVariant,
                         fontSize: 12),
                   )
                 : null,
+            // Selected row: red check at the END, no radio/play affordance.
             trailing: isCurrent
-                ? Icon(LucideIcons.play,
-                    size: 20, color: Theme.of(context).colorScheme.primary)
+                ? Icon(LucideIcons.check,
+                    size: 20, color: dark ? NovaColors.red : scheme.primary)
                 : null,
             onTap: isCurrent
                 ? null
@@ -627,7 +678,9 @@ class _SubtitleStyleSheetState extends State<SubtitleStyleSheet> {
               label: Text(
                 NovaStrings.lookup(english, 'message59'),
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? NovaColors.white
+                      : Theme.of(context).colorScheme.primary,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                 ),
@@ -822,7 +875,10 @@ class _SubtitleStyleSheetState extends State<SubtitleStyleSheet> {
           end: AlignmentDirectional.bottomEnd,
           colors: [NovaColors.graphite, NovaColors.ink],
         ),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? NovaColors.divider
+                : Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Directionality(
         textDirection: TextDirection.rtl,

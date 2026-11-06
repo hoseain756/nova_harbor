@@ -113,7 +113,7 @@ class _NovaErrorPanel extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(LucideIcons.circleAlert, color: palette.gold, size: 40),
+                  Icon(LucideIcons.circleAlert, color: NovaColors.white, size: 40),
                   const SizedBox(height: 16),
                   Text(strings.text('errorTitle'),
                       textAlign: TextAlign.center,

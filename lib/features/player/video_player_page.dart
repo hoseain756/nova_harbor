@@ -2339,7 +2339,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage>
               else
                 const Center(
                   child: CircularProgressIndicator(
-                    color: HorseTheme.gold,
+                    color: NovaColors.red,
                     strokeWidth: 2,
                   ),
                 ),

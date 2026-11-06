@@ -517,7 +517,7 @@ class _SeasonDropdownState extends State<_SeasonDropdown> {
                         height: 20,
                         child: option.season == widget.value
                             ? Icon(LucideIcons.check,
-                                size: 16, color: NovaTheme.of(context).gold)
+                                size: 16, color: NovaColors.white)
                             : null,
                       ),
                       const SizedBox(width: 10),
@@ -720,7 +720,7 @@ class _ViewToggle extends StatelessWidget {
             icon,
             key: ValueKey(view),
             size: 18,
-            color: HorseTheme.gold,
+            color: NovaColors.red,
           ),
         ),
       ),

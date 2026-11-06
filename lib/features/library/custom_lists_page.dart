@@ -548,18 +548,18 @@ class _ListArtwork extends StatelessWidget {
         height: 58,
         child: poster == null
             ? ColoredBox(
-                color: NovaTheme.of(context).raised,
+                color: NovaColors.raised,
                 child:
-                    Icon(LucideIcons.film, color: NovaTheme.of(context).gold),
+                    Icon(LucideIcons.film, color: NovaColors.mist),
               )
             : NovaNetworkImage(poster,
                 fit: BoxFit.cover,
                 // Task 136: decode at the 42px list thumbnail size.
                 cacheWidth: imageCacheWidth(context, 42),
                 errorBuilder: (_, __, ___) => ColoredBox(
-                    color: NovaTheme.of(context).raised,
+                    color: NovaColors.raised,
                     child: Icon(LucideIcons.film,
-                        color: NovaTheme.of(context).gold))),
+                        color: NovaColors.mist))),
       ),
     );
   }

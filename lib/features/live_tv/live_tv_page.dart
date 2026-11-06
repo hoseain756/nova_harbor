@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../../core/data/iptv_parser.dart';
 import '../../core/models/media_item.dart';
 import '../../core/state/app_state.dart';
+import '../../core/theme/nova_theme.dart';
 import '../shell/nova_browse_widgets.dart';
 import '../../shared/widgets/app_state_message.dart';
 import '../../shared/widgets/image_decode.dart';
@@ -310,9 +311,9 @@ class _LiveTvPageState extends State<LiveTvPage> {
                                       duration;
                               return Material(
                                 color: theme.colorScheme.surfaceContainerLow,
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(8),
                                 child: InkWell(
-                                    borderRadius: BorderRadius.circular(24),
+                                    borderRadius: BorderRadius.circular(8),
                                     onTap: playable ? () => _play(entry) : null,
                                     child: Padding(
                                         padding: const EdgeInsets.all(20),
@@ -327,16 +328,13 @@ class _LiveTvPageState extends State<LiveTvPage> {
                                                     padding:
                                                         const EdgeInsets.all(8),
                                                     decoration: BoxDecoration(
-                                                        color: theme.colorScheme
-                                                            .surfaceContainerHighest,
+                                                        color: NovaColors.raised,
                                                         borderRadius:
                                                             BorderRadius.circular(
-                                                                16)),
+                                                                8)),
                                                     child: channel.logo == null
                                                         ? Icon(LucideIcons.radio,
-                                                            color: theme
-                                                                .colorScheme
-                                                                .primary)
+                                                            color: NovaColors.mist)
                                                         : NovaNetworkImage(
                                                             channel.logo!,
                                                             fit: BoxFit.contain,
@@ -345,7 +343,7 @@ class _LiveTvPageState extends State<LiveTvPage> {
                                                                     context, 56),
                                                             errorBuilder: (_,
                                                                     __, ___) =>
-                                                                Icon(LucideIcons.radio, color: theme.colorScheme.secondary))),
+                                                                Icon(LucideIcons.radio, color: NovaColors.mist))),
                                                 const SizedBox(width: 16),
                                                 Expanded(
                                                     child: Column(
@@ -377,18 +375,25 @@ class _LiveTvPageState extends State<LiveTvPage> {
                                                         .colorScheme.secondary),
                                               ]),
                                               const SizedBox(height: 20),
-                                              Text(
-                                                  program == null
-                                                      ? app.tr('message668')
-                                                      : app.tr('message669'),
-                                                  style: theme
-                                                      .textTheme.labelSmall
-                                                      ?.copyWith(
-                                                          color: theme
-                                                              .colorScheme
-                                                              .primary,
-                                                          fontWeight:
-                                                              FontWeight.w800)),
+                                              Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 3),
+                                                  decoration: BoxDecoration(
+                                                      color: NovaColors.red,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              4)),
+                                                  child: Text(
+                                                      program == null
+                                                          ? app.tr('message668')
+                                                          : app.tr('message669'),
+                                                      style: const TextStyle(
+                                                          color: NovaColors.white,
+                                                          fontSize: 10,
+                                                          fontWeight: FontWeight
+                                                              .w700))),
                                               const SizedBox(height: 6),
                                               Expanded(
                                                   child: Text(
@@ -402,15 +407,21 @@ class _LiveTvPageState extends State<LiveTvPage> {
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                       style: theme.textTheme
-                                                          .bodyLarge)),
+                                                          .bodyLarge
+                                                          ?.copyWith(
+                                                              fontWeight:
+                                                                  FontWeight.w600))),
                                               if (program != null)
                                                 LinearProgressIndicator(
                                                     value: progress.clamp(
                                                         0.0, 1.0),
-                                                    minHeight: 4,
+                                                    minHeight: 3,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            4)),
+                                                            2),
+                                                    color: NovaColors.red,
+                                                    backgroundColor:
+                                                        NovaColors.raised),
                                             ]))),
                               );
                             });

@@ -11,12 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../core/state/app_state.dart';
-import '../../shared/widgets/shimmer_box.dart';
-
 import '../../core/models/media_item.dart';
 import '../../core/theme/horse_theme.dart';
 import '../../core/torrent/torrent_models.dart';
-import '../../shared/widgets/app_state_message.dart';
 import '../../shared/widgets/image_decode.dart';
 import 'detail_glass.dart';
 import 'stream_loading.dart';
@@ -246,7 +243,8 @@ class _SourcesPageState extends State<SourcesPage> {
                       height: 20,
                       child: i == _sort
                           ? Icon(LucideIcons.check,
-                              size: 16, color: NovaTheme.of(context).gold)
+                              size: 16,
+                              color: Theme.of(context).colorScheme.primary)
                           : null,
                     ),
                     const SizedBox(width: 10),
@@ -257,7 +255,8 @@ class _SourcesPageState extends State<SourcesPage> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontWeight:
+                              i == _sort ? FontWeight.w700 : FontWeight.w600,
                           color: NovaTheme.of(context).ink,
                         ),
                       ),
@@ -319,13 +318,13 @@ class _SourcesPageState extends State<SourcesPage> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: (_addon == null && i == 0) ||
+                          fontWeight: (_addon == null && i == 0) ||
                                   (_addon != null &&
                                       i > 0 &&
                                       names[i - 1] == _addon)
-                              ? NovaTheme.of(context).gold
-                              : NovaTheme.of(context).ink,
+                              ? FontWeight.w700
+                              : FontWeight.w600,
+                          color: NovaTheme.of(context).ink,
                         ),
                       ),
                     ),
@@ -347,7 +346,8 @@ class _SourcesPageState extends State<SourcesPage> {
                       child: (i == 0 && _addon == null) ||
                               (i > 0 && names[i - 1] == _addon)
                           ? Icon(LucideIcons.check,
-                              size: 16, color: NovaTheme.of(context).gold)
+                              size: 16,
+                              color: Theme.of(context).colorScheme.primary)
                           : null,
                     ),
                   ],
@@ -364,8 +364,10 @@ class _SourcesPageState extends State<SourcesPage> {
   final GlobalKey _sortKey = GlobalKey();
   final GlobalKey _addonKey = GlobalKey();
 
-  /// One compact glass chip in the filter bar. [key] anchors the glass
-  /// dropdown menus opened from the sort/add-on chips.
+  /// One Netflix filter chip: stadium shape; idle = transparent fill with a
+  /// 30% white ring and white label, selected = solid white pill with the
+  /// inverted ink label (no accent colour in the selection state). [key]
+  /// anchors the glass dropdown menus opened from the sort/add-on chips.
   Widget _chip({
     Key? key,
     required String label,
@@ -373,39 +375,43 @@ class _SourcesPageState extends State<SourcesPage> {
     IconData? icon,
     VoidCallback? onTap,
   }) {
-    return GlassPillSurface(
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = selected
+        ? (dark ? NovaColors.ink : NovaColors.white)
+        : (dark ? NovaColors.white : scheme.onSurface);
+    return Material(
       key: key,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(999),
-          child: Container(
-            height: 38,
-            padding: const EdgeInsetsDirectional.fromSTEB(13, 0, 15, 0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon,
-                      size: 15,
-                      color: selected
-                          ? NovaTheme.of(context).gold
-                          : NovaTheme.of(context).muted),
-                  const SizedBox(width: 7),
-                ],
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: selected
-                        ? NovaTheme.of(context).gold
-                        : NovaTheme.of(context).muted,
-                  ),
-                ),
+      color: selected
+          ? (dark ? NovaColors.white : NovaColors.ink)
+          : Colors.transparent,
+      shape: StadiumBorder(
+          side: BorderSide(
+              color: dark
+                  ? Colors.white.withValues(alpha: .30)
+                  : NovaColors.ink.withValues(alpha: .30))),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 38,
+          padding: const EdgeInsetsDirectional.fromSTEB(13, 0, 15, 0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 15, color: foreground),
+                const SizedBox(width: 7),
               ],
-            ),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: foreground,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -479,6 +485,7 @@ class _SourcesPageState extends State<SourcesPage> {
     final english = app?.english ?? widget.english;
     final condensed = app?.webSettings['pickerLayout'] == 'condensed';
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final video = widget.video;
     final season = (video?['season'] as num?)?.toInt();
     final episode = (video?['episode'] as num?)?.toInt();
@@ -526,12 +533,15 @@ class _SourcesPageState extends State<SourcesPage> {
                           suffixIcon: widget.loader == null
                               ? null
                               : _refreshing
-                                  ? const Padding(
-                                      padding: EdgeInsets.all(16),
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(16),
                                       child: SizedBox.square(
                                           dimension: 20,
                                           child: CircularProgressIndicator(
-                                              strokeWidth: 2)))
+                                              strokeWidth: 2,
+                                              color: dark
+                                                  ? NovaColors.red
+                                                  : scheme.primary)))
                                   : IconButton(
                                       tooltip: NovaStrings.lookup(
                                           english, 'message200'),
@@ -560,27 +570,43 @@ class _SourcesPageState extends State<SourcesPage> {
                   if (_loadFailed) ...[
                     const SizedBox(height: 16),
                     Text(NovaStrings.lookup(english, 'message203'),
-                        style: TextStyle(color: scheme.error)),
-                    TextButton.icon(
+                        style: TextStyle(
+                            fontSize: 13, color: scheme.onSurfaceVariant)),
+                    const SizedBox(height: 8),
+                    FilledButton.icon(
                         onPressed: _refresh,
-                        icon: const Icon(LucideIcons.refreshCw),
+                        icon: const Icon(LucideIcons.refreshCw, size: 16),
                         label: Text(NovaStrings.lookup(english, 'message174'))),
                   ],
                 ]);
             final resultSliver = _initialLoading
-                ? SliverList.builder(
-                    itemCount: 6,
-                    itemBuilder: (_, __) => const Padding(
-                        padding: EdgeInsetsDirectional.only(bottom: 16),
-                        child: ShimmerBox(height: 112)))
+                ? SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                        child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                          SizedBox.square(
+                              dimension: 30,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: dark
+                                      ? NovaColors.red
+                                      : scheme.primary)),
+                          const SizedBox(height: 16),
+                          Text(NovaStrings.lookup(english, 'message216'),
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: scheme.onSurfaceVariant)),
+                        ])))
                 : visible.isEmpty
                     ? SliverFillRemaining(
                         hasScrollBody: false,
-                        child: AppStateMessage(
+                        child: _EmptyState(
                             icon: _loadFailed
                                 ? LucideIcons.wifiOff
                                 : LucideIcons.searchX,
-                            message: _loadFailed
+                            headline: _loadFailed
                                 ? (NovaStrings.lookup(english, 'message204'))
                                 : _streams.isEmpty
                                     ? (NovaStrings.lookup(
@@ -597,6 +623,8 @@ class _SourcesPageState extends State<SourcesPage> {
                               facts: _facts[i],
                               english: english,
                               condensed: condensed,
+                              topRanked: index == 0,
+                              showDivider: index < visible.length - 1,
                               onTap: stream[unavailableTorrentSourceKey] !=
                                           true &&
                                       (_isDirect(stream) || _isTorrent(stream))
@@ -612,11 +640,16 @@ class _SourcesPageState extends State<SourcesPage> {
                         child: SingleChildScrollView(
                             padding: const EdgeInsets.all(24),
                             child: controls)),
-                    VerticalDivider(width: 1, color: scheme.outlineVariant),
+                    VerticalDivider(
+                        width: 1,
+                        color: dark
+                            ? NovaColors.netflixLine
+                            : scheme.outlineVariant),
                     Expanded(
                         child: CustomScrollView(slivers: [
                       SliverPadding(
-                          padding: const EdgeInsets.all(24),
+                          padding:
+                              const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 24),
                           sliver: resultSliver)
                     ])),
                   ]);
@@ -626,7 +659,7 @@ class _SourcesPageState extends State<SourcesPage> {
                   child: Padding(
                       padding: const EdgeInsets.all(24), child: controls)),
               SliverPadding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 24),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 24),
                   sliver: resultSliver),
             ]);
           })),
@@ -763,8 +796,9 @@ class _SourceFacts {
 
 /// The add-on's own icon in a rounded square — start-aligned so it sits on
 /// the right in RTL (Arabic) and on the left in LTR (English) automatically.
-/// Falls back to the add-on's initial letter on a gold tile; a small
-/// cloud-off badge marks rows no playback path supports.
+/// Falls back to the add-on's initial letter on a #323232 tile (Netflix
+/// raised grey, white glyph); a small cloud-off badge marks rows no
+/// playback path supports.
 class _AddonIcon extends StatelessWidget {
   const _AddonIcon({
     required this.icon,
@@ -778,13 +812,20 @@ class _AddonIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final initial = name.trim().isEmpty
         ? '?'
         : String.fromCharCode(name.trim().runes.first).toUpperCase();
+    final glyph = TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w800,
+      color: dark ? NovaColors.white : scheme.onSurface,
+    );
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Container(
-        color: NovaTheme.of(context).gold.withValues(alpha: .12),
+        color: dark ? NovaColors.raised : scheme.surfaceContainerHighest,
         child: icon != null
             ? NovaNetworkImage(
                 icon!,
@@ -793,49 +834,39 @@ class _AddonIcon extends StatelessWidget {
                 height: double.infinity,
                 // Task 136: decode at the tiny picker-icon size.
                 cacheWidth: imageCacheWidth(context, 24),
-                errorBuilder: (_, __, ___) => Center(
-                  child: Text(
-                    initial,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: NovaTheme.of(context).gold,
-                    ),
-                  ),
-                ),
+                errorBuilder: (_, __, ___) =>
+                    Center(child: Text(initial, style: glyph)),
               )
-            : Center(
-                child: Text(
-                  initial,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: NovaTheme.of(context).gold,
-                  ),
-                ),
-              ),
+            : Center(child: Text(initial, style: glyph)),
       ),
     );
   }
 }
 
-/// One source row (Task 123 redesign): add-on icon square leads (flips with
-/// the language), title beside it, facts line below (kind · quality pill ·
-/// seeds · size · codec). Disabled rows (neither URL nor infoHash) dim.
+/// One source row (Netflix port): a flat row on the page surface — no card
+/// box. The add-on icon square leads (flips with the language), the source
+/// title sits in white 15dp w500 over a muted 12dp facts line (provider ·
+/// kind · size · codec · seeds), a #323232 quality badge rides on the end,
+/// and the top-ranked playable source gets the red play glyph. Disabled
+/// rows (neither URL nor infoHash) dim. [showDivider] draws the hairline
+/// #222222 separator below the row (every row but the last).
 class _SourceRow extends StatelessWidget {
   const _SourceRow(
       {required this.stream,
       required this.facts,
       required this.english,
       required this.condensed,
+      required this.topRanked,
+      required this.showDivider,
       required this.onTap});
   final Map<String, dynamic> stream;
   final _SourceFacts facts;
-  final bool english, condensed;
+  final bool english, condensed, topRanked, showDivider;
   final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final title = (stream['title'] ??
             stream['name'] ??
             stream['description'] ??
@@ -851,121 +882,146 @@ class _SourceRow extends StatelessWidget {
         : facts.isDirect
             ? (NovaStrings.lookup(english, 'message195'))
             : (NovaStrings.lookup(english, 'message210'));
-    return Padding(
-        padding: EdgeInsetsDirectional.only(bottom: condensed ? 8 : 16),
-        child: Material(
-          color: scheme.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: scheme.outlineVariant)),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-              onTap: onTap,
-              child: Padding(
-                  padding: EdgeInsets.all(condensed ? 12 : 20),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          SizedBox.square(
-                              dimension: 24,
-                              child: _AddonIcon(
-                                  icon: stream['addonIcon']?.toString(),
-                                  name: addon,
-                                  radius: 8)),
-                          const SizedBox(width: 8),
-                          Expanded(
-                              child: Text(addon,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelLarge
-                                      ?.copyWith(color: scheme.secondary))),
-                          if (facts.qualityLabel != null)
-                            Container(
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    8, 4, 8, 4),
-                                decoration: BoxDecoration(
-                                    color: scheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(8)),
-                                child: Text(facts.qualityLabel!,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge
-                                        ?.copyWith(
-                                            color: scheme.onPrimaryContainer))),
-                        ]),
-                        SizedBox(height: condensed ? 6 : 12),
-                        Text(title,
-                            maxLines: condensed &&
-                                    MediaQuery.textScalerOf(context)
-                                            .scale(14) <=
-                                        21
-                                ? 1
-                                : 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                    height: 1.5,
-                                    color: onTap == null
-                                        ? scheme.onSurfaceVariant
-                                        : scheme.onSurface)),
-                        SizedBox(height: condensed ? 6 : 12),
-                        Row(children: [
-                          Expanded(
-                              child: Wrap(
-                                  spacing: 12,
-                                  runSpacing: 6,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                Text(kind,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                            color: scheme.onSurfaceVariant)),
-                                if (facts.sizeLabel.isNotEmpty)
-                                  Text(facts.sizeLabel,
-                                      textDirection: TextDirection.ltr,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall),
-                                if (facts.codec != null)
-                                  Text(facts.codec!,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall),
-                                if (facts.seeds != null)
-                                  Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(LucideIcons.users,
-                                            size: 14,
-                                            color: scheme.onSurfaceVariant),
-                                        const SizedBox(width: 4),
-                                        Text('${facts.seeds}',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall)
-                                      ]),
-                                if (stream[unavailableTorrentSourceKey] == true)
-                                  Text(
-                                      NovaStrings.lookup(
-                                          english, 'torrentUnavailable'),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(color: scheme.error)),
-                              ])),
-                          if (onTap != null)
-                            Icon(LucideIcons.play,
-                                color: scheme.primary, size: 24),
-                        ]),
-                      ]))),
-        ));
+    final metaStyle = TextStyle(
+        fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant);
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      Material(
+        color: Colors.transparent,
+        child: InkWell(
+            onTap: onTap,
+            child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(
+                    condensed ? 16 : 20,
+                    condensed ? 10 : 14,
+                    condensed ? 16 : 20,
+                    condensed ? 10 : 14),
+                child: Row(children: [
+                  SizedBox.square(
+                      dimension: 24,
+                      child: _AddonIcon(
+                          icon: stream['addonIcon']?.toString(),
+                          name: addon,
+                          radius: 8)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                      Text(title,
+                          maxLines: condensed &&
+                                  MediaQuery.textScalerOf(context).scale(14) <=
+                                      21
+                              ? 1
+                              : 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              height: 1.35,
+                              color: onTap == null
+                                  ? scheme.onSurfaceVariant
+                                  : (dark
+                                      ? NovaColors.white
+                                      : scheme.onSurface))),
+                      const SizedBox(height: 3),
+                      Wrap(
+                          spacing: 10,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(addon, style: metaStyle),
+                            Text(kind, style: metaStyle),
+                            if (facts.sizeLabel.isNotEmpty)
+                              Text(facts.sizeLabel,
+                                  textDirection: TextDirection.ltr,
+                                  style: metaStyle),
+                            if (facts.codec != null)
+                              Text(facts.codec!, style: metaStyle),
+                            if (facts.seeds != null)
+                              Row(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(LucideIcons.users,
+                                    size: 12, color: scheme.onSurfaceVariant),
+                                const SizedBox(width: 4),
+                                Text('${facts.seeds}', style: metaStyle),
+                              ]),
+                            if (stream[unavailableTorrentSourceKey] == true)
+                              Text(
+                                  NovaStrings.lookup(
+                                      english, 'torrentUnavailable'),
+                                  style: metaStyle.copyWith(color: scheme.error)),
+                          ]),
+                    ])),
+                  if (facts.qualityLabel != null) ...[
+                    const SizedBox(width: 12),
+                    Container(
+                        padding:
+                            const EdgeInsetsDirectional.fromSTEB(8, 4, 8, 4),
+                        decoration: BoxDecoration(
+                            color: dark
+                                ? NovaColors.raised
+                                : scheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(4)),
+                        child: Text(facts.qualityLabel!,
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: dark
+                                    ? NovaColors.white
+                                    : scheme.onSurface))),
+                  ],
+                  if (topRanked && onTap != null) ...[
+                    const SizedBox(width: 12),
+                    Icon(LucideIcons.play,
+                        size: 18,
+                        color: dark ? NovaColors.red : scheme.primary),
+                  ],
+                ]))),
+      ),
+      if (showDivider)
+        Divider(
+            height: 1,
+            thickness: 1,
+            color: dark ? NovaColors.netflixLine : scheme.outlineVariant),
+    ]);
+  }
+}
+
+/// Netflix empty/error state (SourcesPage): a centered 44dp #A0A0A0 icon
+/// over a bold white 16dp w600 headline. Replaces the shared AppStateMessage
+/// on this page and carries over its liveRegion semantics.
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.icon, required this.headline});
+
+  final IconData icon;
+  final String headline;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Center(
+        child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Semantics(
+                    liveRegion: true,
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(icon,
+                          size: 44,
+                          color: dark
+                              ? NovaColors.mist
+                              : scheme.onSurfaceVariant),
+                      const SizedBox(height: 16),
+                      Text(headline,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: dark
+                                  ? NovaColors.white
+                                  : scheme.onSurface)),
+                    ])))));
   }
 }
 
@@ -1021,6 +1077,7 @@ class StreamPrepareDialog extends StatelessWidget {
                       LinearProgressIndicator(
                           value: progress,
                           minHeight: 8,
+                          color: scheme.primary,
                           borderRadius: BorderRadius.circular(8)),
                       const SizedBox(height: 16),
                       Text(NovaStrings.lookup(english, 'message217'),
@@ -1034,7 +1091,7 @@ class StreamPrepareDialog extends StatelessWidget {
                               style: Theme.of(context)
                                   .textTheme
                                   .headlineSmall
-                                  ?.copyWith(color: scheme.secondary)),
+                                  ?.copyWith(color: scheme.onSurface)),
                           Text(
                               '${(snapshot.downloadRate / (1024 * 1024)).toStringAsFixed(2)} MB/s',
                               textDirection: TextDirection.ltr,

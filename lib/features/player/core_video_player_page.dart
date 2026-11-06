@@ -2313,7 +2313,7 @@ class _CoreVideoPlayerPageState extends State<CoreVideoPlayerPage>
               else if (!ready)
                 const Center(
                     child: CircularProgressIndicator(
-                        color: HorseTheme.gold, strokeWidth: 2)),
+                        color: NovaColors.red, strokeWidth: 2)),
 
               // Before the ready chrome exists, keep torrent connection
               // feedback in its standalone position. Once ready, the same

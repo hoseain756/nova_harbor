@@ -63,7 +63,16 @@ Future<void> showSharedCollectionPicker(
                   Text(strings.text('sharedAddToCollection'),
                       style: Theme.of(sheetContext).textTheme.headlineSmall),
                   const SizedBox(height: 8),
-                  Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(item.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(sheetContext)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(
+                              color: Theme.of(sheetContext)
+                                  .colorScheme
+                                  .onSurfaceVariant)),
                 ],
               ),
             ),
@@ -74,7 +83,11 @@ Future<void> showSharedCollectionPicker(
                     child: Padding(
                       padding: const EdgeInsets.all(32),
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        const Icon(LucideIcons.usersRound, size: 40),
+                        Icon(LucideIcons.usersRound,
+                            size: 40,
+                            color: Theme.of(sheetContext)
+                                .colorScheme
+                                .onSurfaceVariant),
                         const SizedBox(height: 12),
                         Text(strings.text('sharedNoWritableCollections'),
                             textAlign: TextAlign.center),

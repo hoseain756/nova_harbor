@@ -204,7 +204,7 @@ class _PosterFallback extends StatelessWidget {
         color: NovaTheme.of(context).raised,
         child: Center(
           child: Icon(LucideIcons.film,
-              size: 34, color: NovaTheme.of(context).gold),
+              size: 34, color: NovaColors.white),
         ),
       );
 }

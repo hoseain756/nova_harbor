@@ -1654,7 +1654,7 @@ class PlayerCardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon, size: 15, color: HorseTheme.gold),
+          Icon(icon, size: 15, color: NovaColors.white),
           const SizedBox(width: 7),
           Expanded(
             child: Text(

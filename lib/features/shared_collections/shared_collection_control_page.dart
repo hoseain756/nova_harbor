@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/shared_collections/shared_collections_service.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../l10n/nova_strings.dart';
 import 'shared_collections_panel.dart';
 
@@ -279,7 +280,8 @@ class _SharedCollectionControlPageState
     return Scaffold(
       appBar: AppBar(title: Text(strings.text('sharedOwnerControls'))),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: NovaColors.red))
           : _error != null
               ? Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [

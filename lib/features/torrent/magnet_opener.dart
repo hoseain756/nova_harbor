@@ -63,7 +63,7 @@ Future<void> openMagnetFlow(
       backgroundColor: NovaTheme.of(context).surface,
       barrierColor: NovaColors.scrim,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) => _MagnetSheet(initialMagnet: initialMagnet),
     );
@@ -327,6 +327,7 @@ class _MagnetSheetState extends State<_MagnetSheet> {
   Widget build(BuildContext context) {
     final english = _english;
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final index = switch (_stage) {
       _Stage.input => 0,
       _Stage.resolving => 0,
@@ -354,7 +355,8 @@ class _MagnetSheetState extends State<_MagnetSheet> {
                   children: [
                     Row(children: [
                       Icon(LucideIcons.magnet,
-                          color: scheme.secondary, size: 32),
+                          color: dark ? NovaColors.white : scheme.onSurface,
+                          size: 32),
                       const SizedBox(width: 16),
                       Expanded(
                           child: Text(NovaStrings.lookup(english, 'message715'),
@@ -430,16 +432,19 @@ class _MagnetSheetState extends State<_MagnetSheet> {
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(4),
               borderSide: BorderSide(color: NovaTheme.of(context).line),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(4),
               borderSide: BorderSide(color: NovaTheme.of(context).line),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: NovaTheme.of(context).gold),
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ),
             ),
             suffixIcon: IconButton(
               tooltip: NovaStrings.lookup(english, 'message718'),
@@ -484,7 +489,7 @@ class _MagnetSheetState extends State<_MagnetSheet> {
             foregroundColor: Theme.of(context).colorScheme.onPrimary,
             padding: const EdgeInsets.symmetric(vertical: 13),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(13),
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
           onPressed: _start,
@@ -538,6 +543,8 @@ class _MagnetSheetState extends State<_MagnetSheet> {
     final meta = _meta;
     if (meta == null) return const SizedBox.shrink();
     final videos = _videoFiles(meta);
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -545,13 +552,13 @@ class _MagnetSheetState extends State<_MagnetSheet> {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: NovaTheme.of(context).raised,
-            borderRadius: BorderRadius.circular(13),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(color: NovaTheme.of(context).line),
           ),
           child: Row(
             children: [
               Icon(LucideIcons.film,
-                  color: NovaTheme.of(context).gold, size: 19),
+                  color: dark ? NovaColors.white : scheme.onSurface, size: 19),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -578,20 +585,24 @@ class _MagnetSheetState extends State<_MagnetSheet> {
             itemBuilder: (context, i) {
               final file = videos[i];
               final selected = file.index == _selectedFile;
+              // Netflix selection tile: #262626 fill with a red 1.5dp
+              // border when picked; flat #323232 grey when idle.
               return Material(
                 color: selected
-                    ? NovaTheme.of(context).gold.withValues(alpha: .12)
-                    : NovaTheme.of(context).raised,
+                    ? (dark
+                        ? NovaColors.surfaceHigh
+                        : scheme.surfaceContainerHigh)
+                    : (dark
+                        ? NovaColors.raised
+                        : scheme.surfaceContainerHighest),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: selected
-                        ? NovaTheme.of(context).gold
-                        : NovaTheme.of(context).line,
-                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  side: selected
+                      ? BorderSide(color: scheme.primary, width: 1.5)
+                      : BorderSide.none,
                 ),
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                   onTap: () => setState(() => _selectedFile = file.index),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -603,7 +614,7 @@ class _MagnetSheetState extends State<_MagnetSheet> {
                               ? LucideIcons.circleCheck
                               : LucideIcons.circle,
                           color: selected
-                              ? NovaTheme.of(context).gold
+                              ? scheme.primary
                               : NovaTheme.of(context).muted,
                           size: 20,
                         ),
@@ -639,7 +650,7 @@ class _MagnetSheetState extends State<_MagnetSheet> {
             foregroundColor: Theme.of(context).colorScheme.onPrimary,
             padding: const EdgeInsets.symmetric(vertical: 13),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(13),
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
           onPressed: () => _play(meta, _selectedFile),

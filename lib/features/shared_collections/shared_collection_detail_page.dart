@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/models/media_item.dart';
 import '../../core/shared_collections/shared_collections_service.dart';
+import '../../core/theme/nova_theme.dart';
 import '../../l10n/nova_strings.dart';
 import '../../shared/widgets/nova_network_image.dart';
 import '../media/media_detail_page.dart';
@@ -275,7 +276,8 @@ class _SharedCollectionDetailPageState extends State<SharedCollectionDetailPage>
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: NovaColors.red))
           : _error != null || collection == null
               ? Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -309,7 +311,12 @@ class _SharedCollectionDetailPageState extends State<SharedCollectionDetailPage>
                                     size: 18, color: scheme.onSurfaceVariant),
                                 const SizedBox(width: 8),
                                 Text(strings.text('sharedMemberCount',
-                                    {'count': _members.length})),
+                                    {'count': _members.length}),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                            color: scheme.onSurfaceVariant)),
                               ]),
                               if (canAdd)
                                 FilledButton.icon(
@@ -331,7 +338,12 @@ class _SharedCollectionDetailPageState extends State<SharedCollectionDetailPage>
                                       Theme.of(context).textTheme.titleMedium),
                               const SizedBox(height: 8),
                               Text(strings.text('sharedNoItemsDescription'),
-                                  textAlign: TextAlign.center),
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                          color: scheme.onSurfaceVariant)),
                             ]),
                           )
                         else
@@ -396,9 +408,13 @@ class _CollectionItemRow extends StatelessWidget {
         width: 48,
         height: 64,
         child: item.posterUrl == null
-            ? ColoredBox(
-                color: scheme.surfaceContainerHigh,
-                child: Icon(LucideIcons.film, color: scheme.primary),
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: ColoredBox(
+                  color: scheme.surfaceContainerHigh,
+                  child: Icon(LucideIcons.film,
+                      color: scheme.onSurfaceVariant),
+                ),
               )
             : ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -407,7 +423,8 @@ class _CollectionItemRow extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => ColoredBox(
                     color: scheme.surfaceContainerHigh,
-                    child: Icon(LucideIcons.film, color: scheme.primary),
+                    child: Icon(LucideIcons.film,
+                        color: scheme.onSurfaceVariant),
                   ),
                 ),
               ),
