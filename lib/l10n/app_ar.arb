@@ -136,6 +136,8 @@
   "navigationBarCompactDescription": "الشكل والمسافات نفسها، مع الأيقونات فقط.",
   "navigationBarMini": "مصغّر",
   "navigationBarMiniDescription": "شريط عائم أنحف بأيقونات فقط ومسافة واضحة عن الحافتين.",
+  "navigationBarLiquid": "زجاج سائل",
+  "navigationBarLiquidDescription": "شريط عائم بأسلوب آبل مع انكسار ضوئي حقيقي ولمعان حواف وعدسة اختيار سائلة تنساب بين التبويبات.",
   "appIconTitle": "أيقونة التطبيق",
   "appIconDescription": "اختر أيقونة NOVA على الشاشة الرئيسية من الرسومات الأصلية للعلامة.",
   "appIconChoose": "اختر أيقونة",

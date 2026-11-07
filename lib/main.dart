@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 
 import 'app/noor_app.dart';
 import 'core/api/noor_api.dart';
@@ -29,6 +30,10 @@ Future<void> main() async {
   // the player route's first frame, which in release paints the full-screen
   // grey/white error box instead of the player. Idempotent.
   MediaKit.ensureInitialized();
+  // Liquid Glass dock: load the glass shaders while the launch screen is up
+  // so the first dock frame renders real refraction instead of FakeGlass.
+  // Failures are reported through FlutterError, never thrown.
+  unawaited(LiquidGlass.precache());
   // Task 128: release builds paint uncaught build/layout exceptions as the
   // near-white RenderErrorBox users reported as a "white screen". Replace it
   // app-wide with a dark, on-brand error panel (debug keeps the classic red

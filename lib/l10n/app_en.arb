@@ -136,6 +136,8 @@
   "navigationBarCompactDescription": "The same bar shape and spacing, with icons only.",
   "navigationBarMini": "Mini",
   "navigationBarMiniDescription": "A slimmer floating bar with icons only and clear space at both edges.",
+  "navigationBarLiquid": "Liquid Glass",
+  "navigationBarLiquidDescription": "Apple-style floating glass with real refraction, specular highlights and a liquid selection lens that flows between tabs.",
   "appIconTitle": "App icon",
   "appIconDescription": "Choose NOVA's Home Screen icon from the original brand artwork.",
   "appIconChoose": "Choose an icon",

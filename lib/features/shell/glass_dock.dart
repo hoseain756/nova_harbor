@@ -86,11 +86,13 @@ const double _kStadiumRadius = 9999;
 enum NavigationBarStyle {
   classic,
   compact,
-  mini;
+  mini,
+  liquid;
 
   static NavigationBarStyle fromSetting(Object? value) => switch (value) {
         'compact' => NavigationBarStyle.compact,
         'mini' => NavigationBarStyle.mini,
+        'liquid' => NavigationBarStyle.liquid,
         _ => NavigationBarStyle.classic,
       };
 }

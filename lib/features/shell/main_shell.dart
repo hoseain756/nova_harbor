@@ -26,6 +26,7 @@ import '../settings/settings_page.dart';
 import '../settings/stats_page.dart';
 import 'dock_tab.dart';
 import 'glass_dock.dart';
+import 'liquid_glass_dock.dart';
 import 'noor_dock_tabs.dart';
 import 'search_sheet.dart';
 
@@ -411,7 +412,10 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
             Positioned.fill(
                 child: NotificationListener<ScrollNotification>(
                     onNotification: _onScroll, child: pages)),
-            if (!tablet && !useNativeChrome && _selected == 0)
+            if (!tablet &&
+                !useNativeChrome &&
+                _selected == 0 &&
+                navigationBarStyle != NavigationBarStyle.liquid)
               PositionedDirectional(
                   end: 20,
                   top: MediaQuery.paddingOf(context).top + 12,
@@ -428,16 +432,29 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
                   start: 0,
                   end: 0,
                   bottom: 0,
-                  child: GlassDock(
-                      tabs: noorDockTabsFor(rtl: !english),
-                      activeId: noorDockTabIdForIndex(_selected),
-                      onTabSelected: (DockTab tab) => unawaited(
-                          _selectTab(noorDockIndexForTabId(tab.view))),
-                      languageCode: english ? 'en' : 'ar',
-                      style: navigationBarStyle,
-                      hidden: !_chromeVisible,
-                      reduceMotion: reduce,
-                      reduceTransparency: reduceTransparency)),
+                  child: navigationBarStyle == NavigationBarStyle.liquid
+                      ? LiquidGlassDock(
+                          tabs: noorDockTabsFor(rtl: !english),
+                          activeId: noorDockTabIdForIndex(_selected),
+                          onTabSelected: (DockTab tab) => unawaited(
+                              _selectTab(noorDockIndexForTabId(tab.view))),
+                          languageCode: english ? 'en' : 'ar',
+                          hidden: !_chromeVisible,
+                          reduceMotion: reduce,
+                          reduceTransparency: reduceTransparency,
+                          onSearch: _selected == 2 ? null : _openSearch,
+                          searchLabel: app.tr('message679'),
+                        )
+                      : GlassDock(
+                          tabs: noorDockTabsFor(rtl: !english),
+                          activeId: noorDockTabIdForIndex(_selected),
+                          onTabSelected: (DockTab tab) => unawaited(
+                              _selectTab(noorDockIndexForTabId(tab.view))),
+                          languageCode: english ? 'en' : 'ar',
+                          style: navigationBarStyle,
+                          hidden: !_chromeVisible,
+                          reduceMotion: reduce,
+                          reduceTransparency: reduceTransparency)),
           ])),
         ])),
       ),

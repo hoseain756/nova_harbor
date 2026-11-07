@@ -8,6 +8,7 @@ import '../../core/state/app_state.dart';
 import '../../core/theme/nova_theme.dart';
 import '../shell/dock_tab.dart';
 import '../shell/glass_dock.dart';
+import '../shell/liquid_glass_dock.dart';
 import '../shell/noor_dock_tabs.dart';
 import 'widgets/settings_tiles.dart';
 
@@ -45,17 +46,33 @@ class NavigationBarStylePage extends StatelessWidget {
                     child: SizedBox(
                       height: 132,
                       child: RepaintBoundary(
-                        child: GlassDock(
-                          key: const ValueKey('navigation-style-preview-bar'),
-                          tabs: noorDockTabsFor(rtl: !app.english),
-                          activeId: DockTab.animeId,
-                          onTabSelected: (_) {},
-                          languageCode: app.english ? 'en' : 'ar',
-                          style: style,
-                          previewMode: true,
-                          reduceMotion: true,
-                          reduceTransparency: reduceTransparency,
-                        ),
+                        child: style == NavigationBarStyle.liquid
+                            ? LiquidGlassDock(
+                                key: const ValueKey(
+                                    'navigation-style-preview-bar'),
+                                tabs: noorDockTabsFor(rtl: !app.english),
+                                activeId: DockTab.animeId,
+                                onTabSelected: (_) {},
+                                languageCode: app.english ? 'en' : 'ar',
+                                style: style,
+                                previewMode: true,
+                                reduceMotion: true,
+                                reduceTransparency: reduceTransparency,
+                                onSearch: () {},
+                                searchLabel: '',
+                              )
+                            : GlassDock(
+                                key: const ValueKey(
+                                    'navigation-style-preview-bar'),
+                                tabs: noorDockTabsFor(rtl: !app.english),
+                                activeId: DockTab.animeId,
+                                onTabSelected: (_) {},
+                                languageCode: app.english ? 'en' : 'ar',
+                                style: style,
+                                previewMode: true,
+                                reduceMotion: true,
+                                reduceTransparency: reduceTransparency,
+                              ),
                       ),
                     ),
                   ),
@@ -87,12 +104,14 @@ class NavigationBarStylePage extends StatelessWidget {
         NavigationBarStyle.classic => 'navigationBarClassic',
         NavigationBarStyle.compact => 'navigationBarCompact',
         NavigationBarStyle.mini => 'navigationBarMini',
+        NavigationBarStyle.liquid => 'navigationBarLiquid',
       };
 
   String _descriptionKey(NavigationBarStyle style) => switch (style) {
         NavigationBarStyle.classic => 'navigationBarClassicDescription',
         NavigationBarStyle.compact => 'navigationBarCompactDescription',
         NavigationBarStyle.mini => 'navigationBarMiniDescription',
+        NavigationBarStyle.liquid => 'navigationBarLiquidDescription',
       };
 }
 
@@ -116,6 +135,7 @@ class _NavigationBarStyleOption extends StatelessWidget {
         NavigationBarStyle.classic => LucideIcons.list,
         NavigationBarStyle.compact => LucideIcons.layoutGrid,
         NavigationBarStyle.mini => LucideIcons.minus,
+        NavigationBarStyle.liquid => LucideIcons.droplets,
       };
 
   @override
